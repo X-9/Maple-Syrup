@@ -5,9 +5,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
+import java.util.Random;
 
 import javax.swing.JComponent;
-
 
 /**
  * Let's rock!!!
@@ -28,6 +28,10 @@ public class Liquid extends JComponent implements Idle, Render {
 		return new Dimension(100, 100);
 	}
 	
+	private static float rand() {
+		return new Random().nextFloat()*2-1;
+	}
+	
 	public void populate() {
 		Dimension size = getSize();
 		int step = 8;
@@ -37,9 +41,29 @@ public class Liquid extends JComponent implements Idle, Render {
 			float y = n%size.height;
 			
 			p.p = new Vector2D(x, y);
-			p.v = new Vector2D(0, 0);
+			p.v = new Vector2D(rand(), rand());
 			
 			particles.add(p);
+		}
+	}
+	
+	private void wallCollision(Particle p) {
+		Dimension size = getSize();
+		
+		if (p.p.x > size.width) {
+			p.v.minus(new Vector2D((p.p.x-size.width)/2, 0));
+		}
+		
+		if (p.p.x < 0) {
+			p.v.plus(new Vector2D((0-p.p.x)/2, 0));
+		}
+		
+		if (p.p.y > size.height) {
+			p.v.minus(new Vector2D(0, (p.p.y-size.height)/2));
+		}
+		
+		if (p.p.y < 0) {
+			p.v.plus(new Vector2D(0, (0-p.p.y)/2));
 		}
 	}
 	
@@ -50,6 +74,8 @@ public class Liquid extends JComponent implements Idle, Render {
 			Vector2D g = new Vector2D(0, G);
 			p.v.plus(g);
 			p.p.plus(p.v);
+			
+			wallCollision(p);
 		}
 		
 		// apply viscosity
