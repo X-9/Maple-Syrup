@@ -10,7 +10,14 @@ import java.util.Random;
 import javax.swing.JComponent;
 
 /**
- * Let's rock!!!
+ * Based on:
+ * 
+ * [1] Matthias Müller, David Charypar, Markus Gross. 'Particle-Based Fluid 
+ *     Simulation for Interactive Applications.', 2003.
+ *     
+ * [2] Simon Clavet, Philippe Beaudoin, Pierre Poulin. 'Particle-based 
+ *     Viscoelastic Fluid Simulation', 2005.
+ * 
  */
 public class Liquid extends JComponent implements Idle, Render {
 	private static final long serialVersionUID = 1L;
@@ -22,7 +29,7 @@ public class Liquid extends JComponent implements Idle, Render {
 	static private final float k_ = .01f;	// yet another parameter
 	static private final float sigma = 0f;	// sigma
 	static private final float beta = h/10;	// beta
-	static private final float r = 3f;	//
+	static private final float r = 1.5f;	//
 
 	
 	private SpatialTable<Particle> particles;
