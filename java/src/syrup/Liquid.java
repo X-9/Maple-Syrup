@@ -15,7 +15,11 @@ import javax.swing.JComponent;
 public class Liquid extends JComponent implements Idle, Render {
 	private static final long serialVersionUID = 1L;
 
-	static private final float G = .06f; // gravity
+	static private final float G = .06f;	// gravity
+	static private final float h = 3.f;		// interaction radius
+	static private final float rho0 = 0;	// rest density
+	static private final float k = 0;		// stiffness
+	static private final float k_ = k*10f;	// yet another parameter
 	
 	private SpatialTable<Particle> particles;
 	
@@ -34,8 +38,8 @@ public class Liquid extends JComponent implements Idle, Render {
 	
 	public void populate() {
 		Dimension size = getSize();
-		int step = 8;
-		for (int n = step; n < size.width*size.height; n += step) {
+		int step = 10, i = 0;
+		for (int n = step; n < size.width*size.height; n += step, i++) {
 			Particle p = new Particle();
 			float x = n%size.width;
 			float y = n%size.height;
@@ -45,25 +49,27 @@ public class Liquid extends JComponent implements Idle, Render {
 			
 			particles.add(p);
 		}
+		
+		System.out.println("Populated: " + i + " particles");
 	}
 	
 	private void wallCollision(Particle p) {
 		Dimension size = getSize();
 		
 		if (p.p.x > size.width) {
-			p.v.minus(new Vector2D((p.p.x-size.width)/2, 0));
+			p.v.substract(new Vector2D((p.p.x-size.width)/2, 0));
 		}
 		
 		if (p.p.x < 0) {
-			p.v.plus(new Vector2D((0-p.p.x)/2, 0));
+			p.v.add(new Vector2D((0-p.p.x)/2, 0));
 		}
 		
 		if (p.p.y > size.height) {
-			p.v.minus(new Vector2D(0, (p.p.y-size.height)/2));
+			p.v.substract(new Vector2D(0, (p.p.y-size.height)/2));
 		}
 		
 		if (p.p.y < 0) {
-			p.v.plus(new Vector2D(0, (0-p.p.y)/2));
+			p.v.add(new Vector2D(0, (0-p.p.y)/2));
 		}
 	}
 	
@@ -71,9 +77,9 @@ public class Liquid extends JComponent implements Idle, Render {
 	public void move() {
 		// apply gravity
 		for (Particle p : particles) {
-			Vector2D g = new Vector2D(0, G);
-			p.v.plus(g);
-			p.p.plus(p.v);
+			Vector2D g = new Vector2D(0, G); //gravitation
+			p.v.add(g);
+			p.p.add(p.v);
 			
 			wallCollision(p);
 		}
@@ -90,7 +96,43 @@ public class Liquid extends JComponent implements Idle, Render {
 	}
 	
 	private void density() {
-		
+		for (int i = 0; i < particles.size(); ++i) {
+			Particle pi = particles.get(i);
+			
+			float rho = 0;
+			float rho_ = 0;
+			
+			for (int j = i+1; j < particles.size(); ++j) {	
+				Particle pj = particles.get(j);
+				
+				Vector2D rij = pj.p.minus(pi.p);
+				float q = rij.length()/h;
+				if (q < 1) {
+					rho += (1-q)*(1-q);
+					rho_+= (1-q)*(1-q)*(1-q);
+				}
+			} // for
+			
+			float P  = k*(rho - rho0);
+			float P_ = k_*rho_;
+			
+			Vector2D dx = new Vector2D(0, 0);
+			
+			for (int j = i+1; j < particles.size(); ++j) {
+				Particle pj = particles.get(j);
+				
+				Vector2D rij = pj.p.minus(pi.p);
+				float q = rij.length()/h;
+				if (q < 1) {
+					float a = P*(1-q)+P_*(1-q)*(1-q);
+					
+					Vector2D uij = rij.getNormalized().scale(a);
+					pj.p.add(uij.scale(0.5f));
+					dx.substract(uij.scale(0.5f));
+				}
+			} // for
+			pi.p.add(dx);
+		}
 	}
 	
 	@Override
@@ -112,6 +154,7 @@ public class Liquid extends JComponent implements Idle, Render {
 			g2.fill(e);
 		}
 		
+		g2.dispose();
 	}
 	
 	
