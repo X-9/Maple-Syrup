@@ -25,29 +25,28 @@ public class Vector2D {
 		return (float)Math.sqrt(lengthSquared());
 	}
 	
-	/**
-	 * Normalizes this vector
-	 */
+	/** Normalizes this vector */
 	public void normalize() {
 		float l = length();
 		x /= l;
 		y /= l;
 	}
 	
-	/**
-	 * Returns new, normalized vector
-	 */
+	/** Returns new, normalized vector */
 	public Vector2D getNormalized() {
 		Vector2D v = clone();
 		v.normalize();
 		return v;
 	}
 	
-	/**
-	 * Return new, scaled vector.
-	 */
+	/** Return new, scaled vector. */
 	public Vector2D scale(float s) {
 		return new Vector2D(x*s, y*s);
+	}
+	
+	/** Returns new dot product of two vectors. */
+	public float dot(Vector2D v) {
+		return x*v.x+y*v.y;
 	}
 	
 	// Do not return this to avoid cross-reference
@@ -61,19 +60,13 @@ public class Vector2D {
 		y -= v.y;
 	}
 	
-	/**
-	 * Returns new vector and doesn't affect this vector.
-	 */
+	/** Returns new vector and doesn't affect this vector. */
 	public Vector2D plus(Vector2D v) {
 		return new Vector2D(x+v.x, y+v.y);
 	}
 	
-	/**
-	 * Returns new vector and doesn't affect this vector.
-	 */
+	/** Returns new vector and doesn't affect this vector. */
 	public Vector2D minus(Vector2D v) {
 		return new Vector2D(x-v.x, y-v.y);
 	}
-	
-	
 }

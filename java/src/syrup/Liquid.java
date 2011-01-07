@@ -16,10 +16,14 @@ public class Liquid extends JComponent implements Idle, Render {
 	private static final long serialVersionUID = 1L;
 
 	static private final float G = .06f;	// gravity
-	static private final float h = 3.f;		// interaction radius
-	static private final float rho0 = 0;	// rest density
-	static private final float k = 0;		// stiffness
-	static private final float k_ = k*10f;	// yet another parameter
+	static private final float h = 10.f;		// interaction radius
+	static private final float rho0 = 10f;	// rest density
+	static private final float k = .004f;		// stiffness
+	static private final float k_ = .01f;	// yet another parameter
+	static private final float sigma = 0f;	// sigma
+	static private final float beta = h/10;	// beta
+	static private final float r = 3f;	//
+
 	
 	private SpatialTable<Particle> particles;
 	
@@ -55,7 +59,9 @@ public class Liquid extends JComponent implements Idle, Render {
 	
 	private void wallCollision(Particle p) {
 		Dimension size = getSize();
-		
+		size.width -= r;
+		size.height -= r;
+
 		if (p.p.x > size.width) {
 			p.v.substract(new Vector2D((p.p.x-size.width)/2, 0));
 		}
@@ -87,16 +93,46 @@ public class Liquid extends JComponent implements Idle, Render {
 		// apply viscosity
 		viscosity();
 		
+		for (Particle p : particles) {
+			p.pp = p.p.clone();
+			p.p.add(p.v);
+		}
+		
 		// double density relaxation
 		density();
+		
+		for (Particle p : particles) {
+			p.v = p.p.minus(p.pp);
+		}
 	}
 	
 	private void viscosity() {
-		
+		for (int i = 0; i < particles.size()-1; ++i) {
+			Particle pi = particles.get(i);
+			
+			for (int j = i+1; j < particles.size(); ++j) {	
+				Particle pj = particles.get(j);
+				
+				Vector2D rij = pj.p.minus(pi.p);
+				float q = rij.length()/h;
+				if (q < 1) {
+					rij.normalize();
+					Vector2D vij = pi.v.minus(pj.v);
+					float u = vij.dot(rij);
+					
+					if (u > 0) {
+						float s = (1-q)*(sigma*u+beta*u*u);
+						Vector2D I = rij.scale(s);
+						pi.v.substract(I.scale(0.5f));
+						pj.v.add(I.scale(0.5f));
+					}
+				}
+			} // for
+		}
 	}
 	
 	private void density() {
-		for (int i = 0; i < particles.size(); ++i) {
+		for (int i = 0; i < particles.size()-1; ++i) {
 			Particle pi = particles.get(i);
 			
 			float rho = 0;
@@ -143,15 +179,13 @@ public class Liquid extends JComponent implements Idle, Render {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
-		final float r = 1.5f;
 		final float s = 2*r;
 		
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setColor(Color.cyan);
 		for (Particle p : particles) {
 			Ellipse2D e = new Ellipse2D.Float(p.p.x-r, p.p.y-r, s, s);
-			g2.fill(e);
+			g2.draw(e);
 		}
 		
 		g2.dispose();

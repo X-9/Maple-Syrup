@@ -1,6 +1,12 @@
 package syrup;
 
 public class Particle {
-	public Vector2D p;	// Position
-	public Vector2D v;	// Velocity
+	/** Position */
+	public Vector2D p;
+	
+	/** Old position */
+	public Vector2D pp;
+	
+	/** Velocity */
+	public Vector2D v;
 }
