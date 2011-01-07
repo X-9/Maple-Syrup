@@ -51,14 +51,22 @@ public class Vector2D {
 	}
 	
 	// Do not return this to avoid cross-reference
-	public void plus(Vector2D v) {
+	public void add(Vector2D v) {
 		x += v.x;
 		y += v.y;
 	}
 	
-	public void minus(Vector2D v) {
+	public void substract(Vector2D v) {
 		x -= v.x;
 		y -= v.y;
+	}
+	
+	public Vector2D plus(Vector2D v) {
+		return new Vector2D(x+v.x, y+v.y);
+	}
+	
+	public Vector2D minus(Vector2D v) {
+		return new Vector2D(x-v.x, y-v.y);
 	}
 	
 	
