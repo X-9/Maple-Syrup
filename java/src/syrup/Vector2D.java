@@ -61,10 +61,16 @@ public class Vector2D {
 		y -= v.y;
 	}
 	
+	/**
+	 * Returns new vector and doesn't affect this vector.
+	 */
 	public Vector2D plus(Vector2D v) {
 		return new Vector2D(x+v.x, y+v.y);
 	}
 	
+	/**
+	 * Returns new vector and doesn't affect this vector.
+	 */
 	public Vector2D minus(Vector2D v) {
 		return new Vector2D(x-v.x, y-v.y);
 	}
