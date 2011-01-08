@@ -1,13 +1,9 @@
 package syrup;
 
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.geom.Ellipse2D;
+
 import java.util.Random;
 
-import javax.swing.JComponent;
 
 /**
  * Based on:
@@ -19,46 +15,45 @@ import javax.swing.JComponent;
  *     Viscoelastic Fluid Simulation', 2005.
  * 
  */
-public class Liquid extends JComponent implements Idle, Render {
+public class Liquid implements Idle {
 	private static final long serialVersionUID = 1L;
 
 	static private final float G = .06f;	// gravity
-	static private final float h = 10.f;		// interaction radius
+	static private final float h = 10.f;	// interaction radius
 	static private final float rho0 = 10f;	// rest density
-	static private final float k = .004f;		// stiffness
+	static private final float k = .004f;	// stiffness
 	static private final float k_ = .01f;	// yet another parameter
 	static private final float sigma = 0f;	// sigma
-	static private final float beta = h/10;	// beta
-	static private final float r = 1.5f;	//
-
+	static private final float beta = h/20;	// beta
 	
 	private SpatialTable<Particle> particles;
 	
-	public Liquid() {
-		particles = new SpatialTable<Particle>();
-	}
 	
-	@Override
-	public Dimension getPreferredSize() {
-		return new Dimension(100, 100);
+	public Liquid(SpatialTable<Particle> table) {
+		if (table == null) {
+			throw new IllegalArgumentException("SpatialTable instance in null");
+		}
+		particles = table;
 	}
 	
 	private static float rand() {
 		return new Random().nextFloat()*2-1;
 	}
 	
+	public Dimension getSize() {
+		return new Dimension(200, 400);
+	}
+	
 	public void populate() {
 		Dimension size = getSize();
-		int step = 10, i = 0;
-		for (int n = step; n < size.width*size.height; n += step, i++) {
-			Particle p = new Particle();
-			float x = n%size.width;
-			float y = n%size.height;
-			
-			p.p = new Vector2D(x, y);
-			p.v = new Vector2D(rand(), rand());
-			
-			particles.add(p);
+		int step = 7, i = 0;
+		for (int x = 10; x < size.width; x += step) {
+			for (int y = 10; y < size.height; y += step, ++i) {
+				Particle p = new Particle();
+				p.p = new Vector2D(x, y);
+				p.v = new Vector2D(rand(), rand());
+				particles.add(p);
+			}
 		}
 		
 		System.out.println("Populated: " + i + " particles");
@@ -66,8 +61,8 @@ public class Liquid extends JComponent implements Idle, Render {
 	
 	private void wallCollision(Particle p) {
 		Dimension size = getSize();
-		size.width -= r;
-		size.height -= r;
+		size.width 	-= Particle.r;
+		size.height -= Particle.r;
 
 		if (p.p.x > size.width) {
 			p.v.substract(new Vector2D((p.p.x-size.width)/2, 0));
@@ -99,7 +94,8 @@ public class Liquid extends JComponent implements Idle, Render {
 		
 		// apply viscosity
 		viscosity();
-		
+	
+		// save previous position
 		for (Particle p : particles) {
 			p.pp = p.p.clone();
 			p.p.add(p.v);
@@ -108,6 +104,7 @@ public class Liquid extends JComponent implements Idle, Render {
 		// double density relaxation
 		density();
 		
+		// compute next velocity
 		for (Particle p : particles) {
 			p.v = p.p.minus(p.pp);
 		}
@@ -132,6 +129,10 @@ public class Liquid extends JComponent implements Idle, Render {
 						Vector2D I = rij.scale(s);
 						pi.v.substract(I.scale(0.5f));
 						pj.v.add(I.scale(0.5f));
+						
+						if (pi.v.x > 20 || pj.v.x > 20) {
+							System.out.println("HAHA");
+						}
 					}
 				}
 			} // for
@@ -177,26 +178,4 @@ public class Liquid extends JComponent implements Idle, Render {
 			pi.p.add(dx);
 		}
 	}
-	
-	@Override
-	public void display() {
-		repaint();
-	}
-
-	@Override
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		final float s = 2*r;
-		
-		Graphics2D g2 = (Graphics2D)g;
-		g2.setColor(Color.cyan);
-		for (Particle p : particles) {
-			Ellipse2D e = new Ellipse2D.Float(p.p.x-r, p.p.y-r, s, s);
-			g2.draw(e);
-		}
-		
-		g2.dispose();
-	}
-	
-	
 }

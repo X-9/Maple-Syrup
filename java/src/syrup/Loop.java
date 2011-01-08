@@ -11,12 +11,17 @@ abstract interface Render {
 public class Loop implements Runnable {
 	static private final int DELAY = 50;
 	
-	private Idle idle;
-	private Render render;
+	private final Idle idle;
+	private final Render render;
+	private Thread thread;
 	
-	public Loop(Idle i, Render r) {
+	public Loop(final Idle i, final Render r) {
 		idle = i; render = r;
-		new Thread(this).start();
+		thread = new Thread(this);
+	}
+	
+	public void start() {
+		thread.start();
 	}
 	
 	@Override
