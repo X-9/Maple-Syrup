@@ -1,6 +1,8 @@
 package syrup;
 
 import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JFrame;
 
@@ -23,6 +25,9 @@ public class TheOne extends JFrame implements ControlsListener {
 		ControlPanel cp = new ControlPanel();
 		cp.addControlsListener(this);
 		canvas.setPreferredSize(liquid.getSize());
+		MouseHandler mouseHandler = new MouseHandler();
+		canvas.addMouseListener(mouseHandler);
+		canvas.addMouseMotionListener(mouseHandler);
 		add(canvas, BorderLayout.CENTER);
 		add(cp, BorderLayout.EAST);
 		pack();
@@ -61,9 +66,28 @@ public class TheOne extends JFrame implements ControlsListener {
 		if (ControlPanel.BETA.equals(e.getName())) {
 			liquid.setBeta(e.getValue());
 		}
+
+	}
+	
+	private class MouseHandler extends MouseAdapter {
 		
-		
-		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			super.mouseDragged(e);
+			mousePressed(e);
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			super.mousePressed(e);
+			liquid.setAttractor(new Vector2D(e.getPoint().x, e.getPoint().y));
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent arg0) {
+			super.mouseReleased(arg0);
+			liquid.setAttractor(new Vector2D(-1f, -1f));
+		}
 		
 	}
 	

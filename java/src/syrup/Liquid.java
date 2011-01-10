@@ -27,8 +27,10 @@ public class Liquid implements Idle {
 	private float beta = h/20;	// beta
 	
 	private SpatialTable<Particle> particles;
+	private Vector2D attractor;
 	
 	
+	// Getters and setters
 	public void setGravity(float gravity) {	this.G = gravity; }
 	public void setRadius(float radius) { this.h = radius; }
 	public void setDensity(float density) {	this.rho0 = density; }
@@ -36,12 +38,15 @@ public class Liquid implements Idle {
 	public void setYetAnotherParamener(float k) { this.k_ = k; }
 	public void setSigma(float sigma) {	this.sigma = sigma;	}
 	public void setBeta(float beta) { this.beta = beta;	}
+	public void setAttractor(Vector2D p) { this.attractor = p; }
 	
+	// Source
 	public Liquid(SpatialTable<Particle> table) {
 		if (table == null) {
 			throw new IllegalArgumentException("SpatialTable instance in null");
 		}
 		particles = table;
+		attractor = new Vector2D(-1, -1);
 	}
 	
 	private static float rand() {
@@ -89,6 +94,19 @@ public class Liquid implements Idle {
 		}
 	}
 	
+	public void attract(Particle p) {
+		int rsqrd = 2500;
+		float k = .005f;
+		Dimension size = getSize();
+		
+		if (attractor.x < 0 || attractor.x > size.width)  return;
+		if (attractor.y < 0 || attractor.y > size.height) return;
+		
+		if (attractor.minus(p.p).lengthSquared() < rsqrd) {
+			p.v.add(attractor.minus(p.p).scale(k));	
+		}
+	}
+	
 	@Override
 	public void move() {
 		// apply gravity
@@ -98,6 +116,8 @@ public class Liquid implements Idle {
 			p.p.add(p.v);
 			
 			wallCollision(p);
+			
+			attract(p);
 		}
 		
 		// apply viscosity
