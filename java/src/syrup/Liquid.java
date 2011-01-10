@@ -1,7 +1,6 @@
 package syrup;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 
 import java.util.Random;
 
@@ -19,16 +18,24 @@ import java.util.Random;
 public class Liquid implements Idle {
 	private static final long serialVersionUID = 1L;
 
-	static private final float G = .06f;	// gravity
-	static private final float h = 10.f;	// interaction radius
-	static private final float rho0 = 10f;	// rest density
-	static private final float k = .004f;	// stiffness
-	static private final float k_ = .01f;	// yet another parameter
-	static private final float sigma = 0f;	// sigma
-	static private final float beta = h/20;	// beta
+	private float G = .06f;		// gravity
+	private float h = 10.f;		// interaction radius
+	private float rho0 = 10f;	// rest density
+	private float k = .004f;	// stiffness
+	private float k_ = .01f;	// yet another parameter
+	private float sigma = 0f;	// sigma
+	private float beta = h/20;	// beta
 	
 	private SpatialTable<Particle> particles;
 	
+	
+	public void setGravity(float gravity) {	this.G = gravity; }
+	public void setRadius(float radius) { this.h = radius; }
+	public void setDensity(float density) {	this.rho0 = density; }
+	public void setStiffness(float stiffness) {	this.k = stiffness; }
+	public void setYetAnotherParamener(float k) { this.k_ = k; }
+	public void setSigma(float sigma) {	this.sigma = sigma;	}
+	public void setBeta(float beta) { this.beta = beta;	}
 	
 	public Liquid(SpatialTable<Particle> table) {
 		if (table == null) {
