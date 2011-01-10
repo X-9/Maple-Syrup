@@ -20,9 +20,10 @@ public class Liquid implements Idle {
 
 	private float G = .06f;		// gravity
 	private float h = 10.f;		// interaction radius
+	private float hh = h*h;		// powered radius
 	private float rho0 = 10f;	// rest density
 	private float k = .004f;	// stiffness
-	private float k_ = .01f;	// yet another parameter
+	private float k_ = .1f;		// yet another parameter
 	private float sigma = 0f;	// sigma
 	private float beta = h/20;	// beta
 	
@@ -32,7 +33,7 @@ public class Liquid implements Idle {
 	
 	// Getters and setters
 	public void setGravity(float gravity) {	this.G = gravity; }
-	public void setRadius(float radius) { this.h = radius; }
+	public void setRadius(float radius) { this.h = radius; this.hh = h*h;}
 	public void setDensity(float density) {	this.rho0 = density; }
 	public void setStiffness(float stiffness) {	this.k = stiffness; }
 	public void setYetAnotherParamener(float k) { this.k_ = k; }
@@ -81,7 +82,7 @@ public class Liquid implements Idle {
 			p.v.substract(new Vector2D((p.p.x-size.width)/2, 0));
 		}
 		
-		if (p.p.x < 0) {
+		if (p.p.x < Particle.r) {
 			p.v.add(new Vector2D((0-p.p.x)/2, 0));
 		}
 		
@@ -89,14 +90,14 @@ public class Liquid implements Idle {
 			p.v.substract(new Vector2D(0, (p.p.y-size.height)/2));
 		}
 		
-		if (p.p.y < 0) {
+		if (p.p.y < Particle.r) {
 			p.v.add(new Vector2D(0, (0-p.p.y)/2));
 		}
 	}
 	
 	public void attract(Particle p) {
 		int rsqrd = 2500;
-		float k = .005f;
+		float k = .01f;
 		Dimension size = getSize();
 		
 		if (attractor.x < 0 || attractor.x > size.width)  return;
@@ -132,10 +133,12 @@ public class Liquid implements Idle {
 		// double density relaxation
 		density();
 		
-		// compute next velocity
+		/*
 		for (Particle p : particles) {
 			p.v = p.p.minus(p.pp);
 		}
+		*/
+		
 	}
 	
 	private void viscosity() {
@@ -146,13 +149,14 @@ public class Liquid implements Idle {
 				Particle pj = particles.get(j);
 				
 				Vector2D rij = pj.p.minus(pi.p);
-				float q = rij.length()/h;
-				if (q < 1) {
+				float q = rij.lengthSquared(); 
+				if (q < hh) {
 					rij.normalize();
 					Vector2D vij = pi.v.minus(pj.v);
 					float u = vij.dot(rij);
 					
 					if (u > 0) {
+						q = (float)(Math.sqrt(q)/h);
 						float s = (1-q)*(sigma*u+beta*u*u);
 						Vector2D I = rij.scale(s);
 						pi.v.substract(I.scale(0.5f));
@@ -168,7 +172,7 @@ public class Liquid implements Idle {
 	}
 	
 	private void density() {
-		for (int i = 0; i < particles.size()-1; ++i) {
+		for (int i = 0; i < particles.size(); ++i) {
 			Particle pi = particles.get(i);
 			
 			float rho = 0;
@@ -178,10 +182,12 @@ public class Liquid implements Idle {
 				Particle pj = particles.get(j);
 				
 				Vector2D rij = pj.p.minus(pi.p);
-				float q = rij.length()/h;
-				if (q < 1) {
-					rho += (1-q)*(1-q);
-					rho_+= (1-q)*(1-q)*(1-q);
+				float q = rij.lengthSquared();
+				if (q < hh) {
+					q = (float)Math.sqrt(q)/h;
+					float qq = (1-q)*(1-q);
+					rho += qq;
+					rho_+= qq*(1-q);
 				}
 			} // for
 			
@@ -194,8 +200,9 @@ public class Liquid implements Idle {
 				Particle pj = particles.get(j);
 				
 				Vector2D rij = pj.p.minus(pi.p);
-				float q = rij.length()/h;
-				if (q < 1) {
+				float q = rij.lengthSquared();
+				if (q < hh) {
+					q = (float)Math.sqrt(q)/h;
 					float a = P*(1-q)+P_*(1-q)*(1-q);
 					
 					Vector2D uij = rij.getNormalized().scale(a);
@@ -204,6 +211,7 @@ public class Liquid implements Idle {
 				}
 			} // for
 			pi.p.add(dx);
+			pi.v = pi.p.minus(pi.pp); // compute next velocity
 		}
 	}
 }

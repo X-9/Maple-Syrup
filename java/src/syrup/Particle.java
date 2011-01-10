@@ -22,7 +22,7 @@ abstract class Emitter {
 }
 
 public class Particle {
-	static public float r = 1.5f;	// particle size
+	static public float r = 3.5f;	// particle size
 	
 	/** Position */
 	public Vector2D p;

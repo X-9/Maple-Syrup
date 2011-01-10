@@ -12,6 +12,7 @@ public class Canvas extends JComponent implements Render {
 	private static final long serialVersionUID = 1L;
 	
 	private final Collection<Particle> elements;
+	private long diff = 0;
 	
 	public Canvas(final Collection<Particle> elements) {
 		if (elements == null) {
@@ -40,6 +41,8 @@ public class Canvas extends JComponent implements Render {
 			g2.draw(e);
 		}
 		
+		g2.drawString(String.valueOf(System.currentTimeMillis()-diff), 20, 20);
+		diff = System.currentTimeMillis();
 		g2.dispose();
 	}
 	
