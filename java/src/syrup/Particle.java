@@ -24,6 +24,12 @@ abstract class Emitter {
 public class Particle {
 	static public float r = 3.5f;	// particle size
 	
+	/** Density */
+	public float rho;
+	
+	/** Near density */
+	public float rho_;
+	
 	/** Position */
 	public Vector2D p;
 	

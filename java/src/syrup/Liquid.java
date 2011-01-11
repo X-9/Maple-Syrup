@@ -1,7 +1,6 @@
 package syrup;
 
 import java.awt.Dimension;
-
 import java.util.Random;
 
 
@@ -29,7 +28,6 @@ public class Liquid implements Idle {
 	
 	private SpatialTable<Particle> particles;
 	private Vector2D attractor;
-	
 	
 	// Getters and setters
 	public void setGravity(float gravity) {	this.G = gravity; }
@@ -132,18 +130,13 @@ public class Liquid implements Idle {
 		
 		// double density relaxation
 		density();
-		
-		/*
-		for (Particle p : particles) {
-			p.v = p.p.minus(p.pp);
-		}
-		*/
-		
 	}
 	
 	private void viscosity() {
 		for (int i = 0; i < particles.size()-1; ++i) {
 			Particle pi = particles.get(i);
+			pi.rho = 0;
+			pi.rho_ = 0;
 			
 			for (int j = i+1; j < particles.size(); ++j) {	
 				Particle pj = particles.get(j);
@@ -154,12 +147,17 @@ public class Liquid implements Idle {
 					q = (float)Math.sqrt(q);	// q is length	
 					rij = rij.devide(q);		// now rij is normalized
 					q /= h;						// find q
+					
 					Vector2D vij = pi.v.minus(pj.v);
 					float u = vij.dot(rij);
 					
+					float qq = (1-q)*(1-q);
+					pi.rho += qq;
+					pi.rho_+= qq*(1-q);
+					
 					if (u > 0) {
 						float s = (1-q)*(sigma*u+beta*u*u);
-						Vector2D I = rij.scale(s).scale(.5f);
+						Vector2D I = rij.scale(s*.5f);
 						pi.v.substract(I);
 						pj.v.add(I);
 						
@@ -176,24 +174,8 @@ public class Liquid implements Idle {
 		for (int i = 0; i < particles.size(); ++i) {
 			Particle pi = particles.get(i);
 			
-			float rho = 0;
-			float rho_ = 0;
-			
-			for (int j = i+1; j < particles.size(); ++j) {	
-				Particle pj = particles.get(j);
-				
-				Vector2D rij = pj.p.minus(pi.p);
-				float q = rij.lengthSquared();
-				if (q < hh) {
-					q = (float)Math.sqrt(q)/h;
-					float qq = (1-q)*(1-q);
-					rho += qq;
-					rho_+= qq*(1-q);
-				}
-			} // for
-			
-			float P  = k*(rho - rho0);
-			float P_ = k_*rho_;
+			float P  = k*(pi.rho - rho0);
+			float P_ = k_*pi.rho_;
 			
 			Vector2D dx = new Vector2D(0, 0);
 			
