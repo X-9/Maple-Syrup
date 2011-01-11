@@ -1,6 +1,8 @@
 package syrup;
 
 import java.awt.Dimension;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Random;
 
 
@@ -28,6 +30,7 @@ public class Liquid implements Idle {
 	
 	private SpatialTable<Particle> particles;
 	private Vector2D attractor;
+	
 	
 	// Getters and setters
 	public void setGravity(float gravity) {	this.G = gravity; }
