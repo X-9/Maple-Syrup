@@ -39,9 +39,14 @@ public class Vector2D {
 		return v;
 	}
 	
-	/** Return new, scaled vector. */
+	/** Returns new, scaled vector. */
 	public Vector2D scale(float s) {
 		return new Vector2D(x*s, y*s);
+	}
+	
+	/**Returns new, divided vector */
+	public Vector2D devide(float d) {
+		return new Vector2D(x/d, y/d);
 	}
 	
 	/** Returns new dot product of two vectors. */

@@ -83,7 +83,7 @@ public class Liquid implements Idle {
 		}
 		
 		if (p.p.x < Particle.r) {
-			p.v.add(new Vector2D((0-p.p.x)/2, 0));
+			p.v.add(new Vector2D((Particle.r-p.p.x)/2, 0));
 		}
 		
 		if (p.p.y > size.height) {
@@ -91,7 +91,7 @@ public class Liquid implements Idle {
 		}
 		
 		if (p.p.y < Particle.r) {
-			p.v.add(new Vector2D(0, (0-p.p.y)/2));
+			p.v.add(new Vector2D(0, (Particle.r-p.p.y)/2));
 		}
 	}
 	
@@ -151,19 +151,20 @@ public class Liquid implements Idle {
 				Vector2D rij = pj.p.minus(pi.p);
 				float q = rij.lengthSquared(); 
 				if (q < hh) {
-					rij.normalize();
+					q = (float)Math.sqrt(q);	// q is length	
+					rij = rij.devide(q);		// now rij is normalized
+					q /= h;						// find q
 					Vector2D vij = pi.v.minus(pj.v);
 					float u = vij.dot(rij);
 					
 					if (u > 0) {
-						q = (float)(Math.sqrt(q)/h);
 						float s = (1-q)*(sigma*u+beta*u*u);
-						Vector2D I = rij.scale(s);
-						pi.v.substract(I.scale(0.5f));
-						pj.v.add(I.scale(0.5f));
+						Vector2D I = rij.scale(s).scale(.5f);
+						pi.v.substract(I);
+						pj.v.add(I);
 						
 						if (pi.v.x > 20 || pj.v.x > 20) {
-							System.out.println("HAHA");
+							System.out.print("HAHA");
 						}
 					}
 				}
@@ -202,12 +203,14 @@ public class Liquid implements Idle {
 				Vector2D rij = pj.p.minus(pi.p);
 				float q = rij.lengthSquared();
 				if (q < hh) {
-					q = (float)Math.sqrt(q)/h;
+					q = (float)Math.sqrt(q);
+					rij = rij.devide(q);
+					q /= h;
 					float a = P*(1-q)+P_*(1-q)*(1-q);
 					
-					Vector2D uij = rij.getNormalized().scale(a);
-					pj.p.add(uij.scale(0.5f));
-					dx.substract(uij.scale(0.5f));
+					Vector2D uij = rij.scale(a).scale(0.5f);
+					pj.p.add(uij);
+					dx.substract(uij);
 				}
 			} // for
 			pi.p.add(dx);
