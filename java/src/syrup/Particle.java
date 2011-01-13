@@ -39,4 +39,6 @@ public class Particle {
 	/** Velocity */
 	public Vector2D v;
 	
+	public Vector2D f;
+
 }

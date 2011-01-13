@@ -24,6 +24,7 @@ public class Canvas extends JComponent implements Render {
 			throw new IllegalArgumentException
 			("Failed to initialize canvas, elements collection is empty.");
 		}
+		
 		this.elements = elements;
 		type = Type.WATER;
 		setIgnoreRepaint(true);
@@ -55,9 +56,11 @@ public class Canvas extends JComponent implements Render {
 			final float s = Particle.r;
 			
 			for (Particle p : elements) {
+				float c = 1-p.rho*0.05f;
+				c = (c < 0) ? 0 : c;
 				Ellipse2D e = new Ellipse2D.Float(p.p.x-r, p.p.y-r, s, s);
-				g2.setColor(Color.black);
-				g2.draw(e);
+				g2.setColor(new Color(0, c, 1));
+				g2.fill(e);
 			}	
 			break;
 		

@@ -1,8 +1,7 @@
 package syrup;
 
 import java.awt.Dimension;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Random;
 
 
@@ -26,18 +25,27 @@ public class Liquid implements Idle {
 	private float k = .004f;	// stiffness
 	private float k_ = .1f;		// yet another parameter
 	private float sigma = 0f;	// sigma
-	private float beta = h/20;	// beta
+	private float beta = .3f;	// beta
 	
 	private SpatialTable<Particle> particles;
+	private ArrayList<Particle>[] nearby = new ArrayList[3000];
 	private Vector2D attractor;
 	
 	
 	// Getters and setters
-	public void setGravity(float gravity) {	this.G = gravity; }
+	public void setGravity(float gravity) {	
+		this.G = gravity; 
+		int min = 10000000, max = -10000000;
+		for (Particle p : particles) {
+			int key = particles.generate(p);
+			if (key < min) min = key;
+			if (key > max) max = key;
+		}
+		System.out.println("min: " + min + " max: " + max );
+		}
 	public void setRadius(float radius) { this.h = radius; this.hh = h*h;}
 	public void setDensity(float density) {	this.rho0 = density; }
-	public void setStiffness(float stiffness) {	this.k = stiffness; }
-	public void setYetAnotherParamener(float k) { this.k_ = k; }
+	public void setStiffness(float stiffness) {	this.k = stiffness; this.k_ = k*10f; }
 	public void setSigma(float sigma) {	this.sigma = sigma;	}
 	public void setBeta(float beta) { this.beta = beta;	}
 	public void setAttractor(Vector2D p) { this.attractor = p; }
@@ -62,14 +70,27 @@ public class Liquid implements Idle {
 	public void populate() {
 		Dimension size = getSize();
 		int step = 7, i = 0;
+		int N = 1500;
 		for (int x = 10; x < size.width; x += step) {
-			for (int y = 10; y < size.height; y += step, ++i) {
+			for (int y = 10; y < size.height && N > 0; y += step, ++i) {
 				Particle p = new Particle();
 				p.p = new Vector2D(x, y);
-				p.v = new Vector2D(rand(), rand());
+				p.pp = new Vector2D(x+rand(), y+rand());
+				p.f = new Vector2D(0, 0);
 				particles.add(p);
+				N--;
 			}
 		}
+		
+		// hahs
+		int min = 10000000, max = -10000000;
+		for (Particle p : particles) {
+			int key = particles.generate(p);
+			if (key < min) min = key;
+			if (key > max) max = key;
+		}
+		
+		System.out.println("min: " + min + " max: " + max );
 		
 		System.out.println("Populated: " + i + " particles");
 	}
@@ -80,19 +101,13 @@ public class Liquid implements Idle {
 		size.height -= Particle.r;
 
 		if (p.p.x > size.width) {
-			p.v.substract(new Vector2D((p.p.x-size.width)/2, 0));
-		}
-		
-		if (p.p.x < Particle.r) {
-			p.v.add(new Vector2D((Particle.r-p.p.x)/2, 0));
-		}
-		
-		if (p.p.y > size.height) {
-			p.v.substract(new Vector2D(0, (p.p.y-size.height)/2));
-		}
-		
-		if (p.p.y < Particle.r) {
-			p.v.add(new Vector2D(0, (Particle.r-p.p.y)/2));
+			p.v.substract(new Vector2D((p.p.x-size.width)/4, 0));
+		} else if (p.p.x < 0) {
+			p.v.add(new Vector2D((-p.p.x)/4, 0));
+		} else if (p.p.y > size.height) {
+			p.v.substract(new Vector2D(0, (p.p.y-size.height)/4));
+		} else if (p.p.y < 0) {
+			p.v.add(new Vector2D(0, (-p.p.y)/4));
 		}
 	}
 	
@@ -113,10 +128,13 @@ public class Liquid implements Idle {
 	public void move() {
 		// apply gravity
 		for (Particle p : particles) {
+			p.v = p.p.minus(p.pp); // compute next velocity
 			Vector2D g = new Vector2D(0, G); //gravitation
 			p.v.add(g);
+			p.v.add(p.f);
 			p.p.add(p.v);
 			
+			p.f = new Vector2D(0, 0);
 			wallCollision(p);
 			
 			attract(p);
@@ -165,7 +183,7 @@ public class Liquid implements Idle {
 						pj.v.add(I);
 						
 						if (pi.v.x > 20 || pj.v.x > 20) {
-							System.out.print("HAHA");
+							System.out.println("HAHA q: "  + " hh: " + hh + " ok: " + (q < 1) );
 						}
 					}
 				}
@@ -191,15 +209,14 @@ public class Liquid implements Idle {
 					q = (float)Math.sqrt(q);
 					rij = rij.devide(q);
 					q /= h;
-					float a = P*(1-q)+P_*(1-q)*(1-q);
 					
+					float a = P*(1-q)+P_*(1-q)*(1-q);
 					Vector2D uij = rij.scale(a).scale(0.5f);
-					pj.p.add(uij);
+					pj.f.add(uij);
 					dx.substract(uij);
 				}
 			} // for
-			pi.p.add(dx);
-			pi.v = pi.p.minus(pi.pp); // compute next velocity
+			pi.f.add(dx);
 		}
 	}
 }

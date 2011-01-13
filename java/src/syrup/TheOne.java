@@ -66,10 +66,6 @@ public class TheOne extends JFrame implements ControlsListener {
 			liquid.setStiffness(e.getValue());
 		}
 		
-		if (ControlPanel.STIFFNESS_NEAR.equals(e.getName())) {
-			liquid.setYetAnotherParamener(e.getValue());
-		}
-		
 		if (ControlPanel.SIGMA.equals(e.getName())) {
 			liquid.setSigma(e.getValue());
 		}
