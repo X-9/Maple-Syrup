@@ -46,6 +46,9 @@ public class Vector2D {
 	
 	/**Returns new, divided vector */
 	public Vector2D devide(float d) {
+		if (d == 0) {
+			throw new IllegalArgumentException();
+		}
 		return new Vector2D(x/d, y/d);
 	}
 	

@@ -22,7 +22,7 @@ abstract class Emitter {
 }
 
 public class Particle {
-	static public float r = 3.5f;	// particle size
+	static public float r = 4f;	// particle size
 	
 	/** Density */
 	public float rho;
@@ -40,5 +40,4 @@ public class Particle {
 	public Vector2D v;
 	
 	public Vector2D f;
-
 }

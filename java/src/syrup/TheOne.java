@@ -22,9 +22,9 @@ public class TheOne extends JFrame implements ControlsListener {
 				int p1 = 73856093;
 				int p2 = 19349663;
 				
-				int i = (int)(value.p.x/20);
-				int j = (int)(value.p.y/20);
-				return ( (i*p1)^(j*p2) )%3000;
+				int i = (int)((value.p.x+.03f)/20);
+				int j = (int)((value.p.y+.03f)/20);
+				return ( (i*p1)^(j*p2) )%10000;
 			}
 		};
 		
