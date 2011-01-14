@@ -1,7 +1,6 @@
 package syrup;
 
 import java.awt.Dimension;
-import java.util.ArrayList;
 import java.util.Random;
 
 
@@ -27,21 +26,12 @@ public class Liquid implements Idle {
 	private float sigma = 0f;	// sigma
 	private float beta = .3f;	// beta
 	
-	private SpatialTable<Particle> particles;
-	private Vector2D attractor;
+	private final SpatialTable<Particle> particles;
+	private final Vector2D attractor;
 	
 	
 	// Getters and setters
-	public void setGravity(float gravity) {	
-		this.G = gravity; 
-		int min = 10000000, max = -10000000;
-		for (Particle p : particles) {
-			int key = particles.generate(p);
-			if (key < min) min = key;
-			if (key > max) max = key;
-		}
-		System.out.println("min: " + min + " max: " + max );
-		}
+	public void setGravity(float gravity) {	this.G = gravity; }
 	public void setRadius(float radius) { this.h = radius; this.hh = h*h;}
 	public void setDensity(float density) {	this.rho0 = density; }
 	public void setStiffness(float stiffness) {	this.k = stiffness; this.k_ = k*10f; }
@@ -50,12 +40,13 @@ public class Liquid implements Idle {
 	public void setAttractor(Vector2D p) { this.attractor = p; }
 	
 	// Source
-	public Liquid(SpatialTable<Particle> table) {
+	public Liquid(final SpatialTable<Particle> table) {
 		if (table == null) {
 			throw new IllegalArgumentException("SpatialTable instance in null");
 		}
 		particles = table;
-		attractor = new Vector2D(-1, -1);
+		
+		attractor = new Vector2D(-1, -1); // mouse out of liquid world
 	}
 	
 	private static float rand() {
@@ -79,6 +70,7 @@ public class Liquid implements Idle {
 				p.f = new Vector2D(0, 0);
 				p.v = p.p.minus(p.pp);
 				particles.add(p);
+				particles.close(p);
 				N--;
 			}
 		}
@@ -96,27 +88,50 @@ public class Liquid implements Idle {
 		System.out.println("Populated: " + i + " particles");
 	}
 	
+	/**
+	 * Checks if particle collides with a wall. Modify particle force if
+	 * it collide.
+	 * 
+	 * @param p Particle to check.
+	 */
 	private void wallCollision(Particle p) {
+		// Liquid dimencion
 		Dimension size = getSize();
+		
+		// Add small padding to liquid size, because
+		// particle position identify upper left corner of particle
 		size.width 	-= Particle.r;
 		size.height -= Particle.r;
 
 		if (p.p.x > size.width) {
 			p.f.substract(new Vector2D((p.p.x-size.width)/2, 0));
-		} else if (p.p.x < 0) {
+		}
+		
+		if (p.p.x < 0) {
 			p.f.add(new Vector2D((-p.p.x)/2, 0));
-		} else if (p.p.y > size.height) {
+		}
+		
+		if (p.p.y > size.height) {
 			p.f.substract(new Vector2D(0, (p.p.y-size.height)/2));
-		} else if (p.p.y < 0) {
+		}
+		
+		if (p.p.y < 0) {
 			p.f.add(new Vector2D(0, (-p.p.y)/2));
 		}
 	}
-	
+
+	/**
+	 * Attract particle to mouse cursor.
+	 * 
+	 * @param p Particle to attract.
+	 */
 	public void attract(Particle p) {
-		int rsqrd = 2500;
-		float k = .01f;
+		final int rsqrd = 2500;	// squared size of attraction length
+		final float k = .005f;	// coefficient of attraction
+		
 		Dimension size = getSize();
 		
+		// Do nothing if user moved cursor position out of world size
 		if (attractor.x < 0 || attractor.x > size.width)  return;
 		if (attractor.y < 0 || attractor.y > size.height) return;
 		
@@ -127,22 +142,21 @@ public class Liquid implements Idle {
 	
 	@Override
 	public void move() {
-		
 		// apply viscosity
 		viscosity();
 		
 		particles.renew();
-		// save previous position
 		for (Particle p : particles) {
-			p.pp = p.p.clone();
-			p.p.add(p.v);
+			p.pp = p.p.clone();			// save previous position
+			p.p.add(p.v);				// apply force and velocity
 			p.p.add(p.f);
-			p.f = new Vector2D(0, G);
-			p.v = p.p.minus(p.pp); // compute next velocity
+			
+			p.f = new Vector2D(0, G); 	// reset force with gravity
+			p.v = p.p.minus(p.pp); 		// compute next velocity
 			
 			wallCollision(p);
 			
-			attract(p);
+			attract(p);					// attract particles to mouse cursor
 			
 			particles.close(p);
 		}
@@ -158,33 +172,26 @@ public class Liquid implements Idle {
 			pi.rho_ = 0;
 			
 			for (Particle pj : particles.nearby(pi)) {
-			//for (int j = i+1; j < particles.size(); ++j) {	
-			//	Particle pj = particles.get(j);
-				
 				Vector2D rij = pj.p.minus(pi.p);
 				float q = rij.lengthSquared();
-				if (q < hh && q != 0) {					
+				
+				if (q < hh && q != 0 ) {					
 					q = (float)Math.sqrt(q);	// q is length	
 					rij = rij.devide(q);		// now rij is normalized
 					q /= h;						// find q
-			
-			
-					Vector2D vij = pi.v.minus(pj.v);
-					float u = vij.dot(rij);
-				
+
 					float qq = (1-q)*(1-q);
 					pi.rho += qq;
 					pi.rho_+= qq*(1-q);
-				
+					
+					Vector2D vij = pi.v.minus(pj.v);
+					float u = vij.dot(rij);
+
 					if (u > 0) {
 						float s = (1-q)*(sigma*u+beta*u*u);
 						Vector2D I = rij.scale(s*.5f);
 						pi.v.substract(I);
 						pj.v.add(I);
-					
-						if (pi.v.x > 20 || pj.v.x > 20) {
-							System.out.println("HAHA q: "  + " hh: " + hh + " ok: " + (q < 1) );
-						}
 					}
 				}
 			} // for
@@ -201,8 +208,6 @@ public class Liquid implements Idle {
 			Vector2D dx = new Vector2D(0, 0);
 			
 			for (Particle pj : particles.nearby(pi)) {
-			//for (int j = i+1; j < particles.size(); ++j) {
-				//Particle pj = particles.get(j);
 				
 				Vector2D rij = pj.p.minus(pi.p);
 				float q = rij.lengthSquared();
