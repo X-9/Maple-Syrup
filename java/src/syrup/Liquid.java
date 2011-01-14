@@ -77,6 +77,7 @@ public class Liquid implements Idle {
 				p.p = new Vector2D(x, y);
 				p.pp = new Vector2D(x+rand(), y+rand());
 				p.f = new Vector2D(0, 0);
+				p.v = p.p.minus(p.pp);
 				particles.add(p);
 				N--;
 			}
@@ -126,29 +127,6 @@ public class Liquid implements Idle {
 	
 	@Override
 	public void move() {
-		particles.renew();
-		// apply gravity
-		for (Particle p : particles) {
-			p.p.add(p.f);
-			p.v = p.p.minus(p.pp);
-			p.pp = p.p.clone();
-			p.p.add(p.v);
-			
-			p.f = new Vector2D(0, G);
-			
-			
-			/*
-			p.v = p.p.minus(p.pp); // compute next velocity
-			
-			p.v.add(new Vector2D(0, G)); //gravitation;
-			p.p.add(p.v);
-			*/
-			
-			wallCollision(p);
-			
-			attract(p);
-			particles.close(p);
-		}
 		
 		// apply viscosity
 		viscosity();
@@ -158,6 +136,14 @@ public class Liquid implements Idle {
 		for (Particle p : particles) {
 			p.pp = p.p.clone();
 			p.p.add(p.v);
+			p.p.add(p.f);
+			p.f = new Vector2D(0, G);
+			p.v = p.p.minus(p.pp); // compute next velocity
+			
+			wallCollision(p);
+			
+			attract(p);
+			
 			particles.close(p);
 		}
 		
