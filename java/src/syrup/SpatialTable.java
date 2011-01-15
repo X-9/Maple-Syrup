@@ -1,50 +1,57 @@
 package syrup;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
-
-abstract public class SpatialTable<V> extends ArrayList<V>{
+/**
+ * Based on:
+ * 
+ * [1] Matthias Teschner Bruno Heidelberger Matthias M¨uller Danat Pomeranets Markus Gross.
+ * 	   'Optimized Spatial Hashing for Collision Detection of Deformable Objects.', 2003.
+ * 
+ * [2] Hubert Nguyen. 'Point-Based Visualization of Metaballs on a GPU / GPU Gems 3.', 2008.
+ * 
+ * @param <V>
+ */
+abstract public class SpatialTable<V> extends ArrayList<V> {
 	private static final long serialVersionUID = 1L;
 	
-	private static final int INIT_TABLE_SIZE = 5000;
-	private ArrayList<V>[] nearby;
+	private static final int INIT_NEARBY_SIZE = 50;
+	private ArrayList<V>[][] nearby;
+	private int row;
+	private int column;
 	
-	abstract protected int generate(V value);
+	abstract protected int posX(V value);
+	abstract protected int posY(V value);
 	
-	public SpatialTable() {
-		nearby = new ArrayList[INIT_TABLE_SIZE];
-	}
-	
-	public void renew() {
-		nearby = new ArrayList[INIT_TABLE_SIZE];
+	public SpatialTable(int row, int column) {
+		this.row = row; this.column = column;
+		nearby = new ArrayList[row][column];
 	}
 	
 	public ArrayList<V> nearby(V v) {
-		int key = generate(v);
-		if (key < 0) return new ArrayList<V>();
-		return nearby[key];
+		int x = posX(v);
+		int y = posY(v);
+		if (x < 0 || y < 0) return new ArrayList<V>();
+		return nearby[x][y];
 	}
 	
-	public boolean close(V v) {
-		ArrayList<Integer> keys = new ArrayList<Integer>(9);
-		int cellSize = 10;
-		for (int i = -cellSize; i < cellSize+1; i += cellSize) {
-			for (int j = -cellSize; j < cellSize+1; j += cellSize) {
-				Particle p = (Particle)v;
-				Particle np = new Particle();
-				np.p = new Vector2D(p.p.x+i, p.p.y+j);
-				int key = generate((V)np);
-				if (keys.contains(key)) continue;
-				if (key <0 ) continue;
-				if (null == nearby[key]) {
-					ArrayList<V> array = new ArrayList<V>(100);
-					nearby[key] = array;
-				}
-				nearby[key].add(v);
-			}
+	public void rehash() {
+		nearby = new ArrayList[row][column];
+		for (V v : this) {
+			addInterRadius(v);
 		}
-		
-		return true;
+	}
+	
+	private void addInterRadius(V v) {
+		for (int i = -1; i < 2; ++i) {
+			for (int j = -1; j < 2; ++j) {
+				int x = posX(v)+i;
+				int y = posY(v)+j;
+				if (null == nearby[x][y]) {
+					nearby[x][y] = new ArrayList<V>(INIT_NEARBY_SIZE);
+				}
+				nearby[x][y].add(v);
+			}
+		} // for
 	}
 }

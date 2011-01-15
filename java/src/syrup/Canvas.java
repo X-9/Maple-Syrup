@@ -38,7 +38,7 @@ public class Canvas extends JComponent implements Render {
 			
 		for (Particle p : elements) {
 			Ellipse2D e = new Ellipse2D.Float(p.p.x-c, p.p.y-c, s, s);
-			g2.setColor(Color.cyan);
+			g2.setColor(new Color(0, 255-(int)(p.rho*15%255), 254));
 			g2.fill(e);
 		}	
 		

@@ -27,7 +27,7 @@ public class Liquid implements Idle {
 	private float beta = .3f;	// beta
 	
 	private final SpatialTable<Particle> particles;
-	private final Vector2D attractor;
+	private Vector2D attractor;
 	
 	
 	// Getters and setters
@@ -54,36 +54,27 @@ public class Liquid implements Idle {
 	}
 	
 	public Dimension getSize() {
-		return new Dimension(200, 400);
+		return new Dimension(200, 300);
 	}
 	
 	public void populate() {
 		
 		Dimension size = getSize();
-		int step = 7, i = 0;
+		int step = 5, i = 0;
 		int N = 1500;
-		for (int x = 10; x < size.width; x += step) {
-			for (int y = 10; y < size.height && N > 0; y += step, ++i) {
+		for (int x = 30; x < size.width; x += step) {
+			for (int y = 30; y < size.height && N > 0; y += step, ++i) {
 				Particle p = new Particle();
 				p.p = new Vector2D(x, y);
 				p.pp = new Vector2D(x+rand(), y+rand());
 				p.f = new Vector2D(0, 0);
 				p.v = p.p.minus(p.pp);
 				particles.add(p);
-				particles.close(p);
 				N--;
 			}
 		}
 		
-		// hahs
-		int min = 10000000, max = -10000000;
-		for (Particle p : particles) {
-			int key = particles.generate(p);
-			if (key < min) min = key;
-			if (key > max) max = key;
-		}
-		System.out.println("min: " + min + " max: " + max );
-		
+		particles.rehash();
 		
 		System.out.println("Populated: " + i + " particles");
 	}
@@ -107,16 +98,16 @@ public class Liquid implements Idle {
 			p.f.substract(new Vector2D((p.p.x-size.width)/2, 0));
 		}
 		
-		if (p.p.x < 0) {
-			p.f.add(new Vector2D((-p.p.x)/2, 0));
+		if (p.p.x < 20) {
+			p.f.add(new Vector2D((20-p.p.x)/2, 0));
 		}
 		
 		if (p.p.y > size.height) {
 			p.f.substract(new Vector2D(0, (p.p.y-size.height)/2));
 		}
 		
-		if (p.p.y < 0) {
-			p.f.add(new Vector2D(0, (-p.p.y)/2));
+		if (p.p.y < 20) {
+			p.f.add(new Vector2D(0, (20-p.p.y)/2));
 		}
 	}
 
@@ -145,7 +136,6 @@ public class Liquid implements Idle {
 		// apply viscosity
 		viscosity();
 		
-		particles.renew();
 		for (Particle p : particles) {
 			p.pp = p.p.clone();			// save previous position
 			p.p.add(p.v);				// apply force and velocity
@@ -157,17 +147,16 @@ public class Liquid implements Idle {
 			wallCollision(p);
 			
 			attract(p);					// attract particles to mouse cursor
-			
-			particles.close(p);
 		}
+		
+		particles.rehash();
 		
 		// double density relaxation
 		density();
 	}
 	
 	private void viscosity() {
-		for (int i = 0; i < particles.size()-1; ++i) {
-			Particle pi = particles.get(i);
+		for (Particle pi : particles) {
 			pi.rho = 0;
 			pi.rho_ = 0;
 			
@@ -199,8 +188,7 @@ public class Liquid implements Idle {
 	}
 	
 	private void density() {
-		for (int i = 0; i < particles.size(); ++i) {
-			Particle pi = particles.get(i);
+		for (Particle pi : particles) {
 			
 			float P  = k*(pi.rho - rho0);
 			float P_ = k_*pi.rho_;

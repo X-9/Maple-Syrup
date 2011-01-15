@@ -15,8 +15,20 @@ public class TheOne extends JFrame implements ControlsListener {
 	
 	public TheOne() {
 		// Collection contains all liquid elements
-		final SpatialTable<Particle> particles = new SpatialTable<Particle>() {
+		final SpatialTable<Particle> particles = new SpatialTable<Particle>(200, 300) {
+			private final static int CELL_SIZE = 10;
+			
+			@Override
+			protected int posX(Particle value) {
+				return (int)((value.p.x+.3f)/CELL_SIZE);
+			}
 
+			@Override
+			protected int posY(Particle value) {
+				return (int)((value.p.y+.3f)/CELL_SIZE);
+			}
+
+			/*
 			@Override
 			protected int generate(Particle value) {
 				int p1 = 73856093;
@@ -26,6 +38,7 @@ public class TheOne extends JFrame implements ControlsListener {
 				int j = (int)((value.p.y+.03f)/10);
 				return ( (i*p1)^(j*p2) )%5000;
 			}
+			*/
 		};
 		
 		liquid = new Liquid(particles);	
