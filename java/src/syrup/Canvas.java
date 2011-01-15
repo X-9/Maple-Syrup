@@ -4,17 +4,16 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
-import java.util.Collection;
 
 import javax.swing.JComponent;
 
 public class Canvas extends JComponent implements Render {
 	private static final long serialVersionUID = 1L;
 	
-	private final Collection<Particle> elements;
+	private final Iterable<Particle> elements;
 	private long diff = 0;
 	
-	public Canvas(final Collection<Particle> elements) {
+	public Canvas(final Iterable<Particle> elements) {
 		if (elements == null) {
 			throw new IllegalArgumentException
 			("Failed to initialize canvas, elements collection is empty.");

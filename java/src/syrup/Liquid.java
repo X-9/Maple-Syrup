@@ -74,8 +74,6 @@ public class Liquid implements Idle {
 			}
 		}
 		
-		particles.rehash();
-		
 		System.out.println("Populated: " + i + " particles");
 	}
 	
