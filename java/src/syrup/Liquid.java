@@ -17,21 +17,22 @@ import java.util.Random;
 public class Liquid implements Idle {
 	private static final long serialVersionUID = 1L;
 
-	private float G = .06f;		// gravity
-	private float h = 10.f;		// interaction radius
-	private float hh = h*h;		// powered radius
-	private float rho0 = 10f;	// rest density
-	private float k = .004f;	// stiffness
-	private float k_ = k*10f;		// yet another parameter
-	private float sigma = 0f;	// sigma
-	private float beta = .3f;	// beta
+	private Vector2D G = new Vector2D(0, .06f);		// gravity
+	private float h = 10.f;							// interaction radius
+	private float hh = h*h;							// powered radius
+	private float rho0 = 10f;						// rest density
+	private float k = .004f;						// stiffness
+	private float k_ = k*10f;						// yet another parameter
+	private float sigma = 0f;						// sigma
+	private float beta = .3f;						// beta
 	
 	private final SpatialTable<Particle> particles;
 	private Vector2D attractor;
 	
 	
 	// Getters and setters
-	public void setGravity(float gravity) {	this.G = gravity; }
+	public void setGravityX(float gravity) { this.G.x = gravity; }
+	public void setGravityY(float gravity) { this.G.y = gravity; }
 	public void setRadius(float radius) { this.h = radius; this.hh = h*h;}
 	public void setDensity(float density) {	this.rho0 = density; }
 	public void setStiffness(float stiffness) {	this.k = stiffness; this.k_ = k*10f; }
@@ -139,7 +140,7 @@ public class Liquid implements Idle {
 			p.p.add(p.v);				// apply force and velocity
 			p.p.add(p.f);
 			
-			p.f = new Vector2D(0, G); 	// reset force with gravity
+			p.f = G.clone();		 	// reset force with gravity
 			p.v = p.p.minus(p.pp); 		// compute next velocity
 			
 			wallCollision(p);

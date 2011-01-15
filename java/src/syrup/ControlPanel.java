@@ -47,6 +47,7 @@ public class ControlPanel extends JPanel {
 	public static final String STIFFNESS_NEAR 	= "Stiffness Near";
 	public static final String SIGMA 			= "Sigma";
 	public static final String BETA 			= "Beta";
+	public static final String ROTATION			= "Rotation";
 	
 	protected final EventListenerList listenerList;
 	
@@ -85,6 +86,7 @@ public class ControlPanel extends JPanel {
 		box.add(make(STIFFNESS, new Float[] {.004f, .001f, 1f, .001f}));
 		box.add(make(SIGMA, new Float[] {.0f, -1f, 10f, .01f}));
 		box.add(make(BETA, new Float[] {.3f, .01f, 10f, .01f}));
+		box.add(make(ROTATION, new Float[] {0f, 0f, 6.3f, .1f}));
 		add(box);
 	}
 	

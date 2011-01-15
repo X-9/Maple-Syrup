@@ -60,7 +60,7 @@ public class TheOne extends JFrame implements ControlsListener {
 		}
 		
 		if (ControlPanel.GRAVITY.equals(e.getName())) {
-			liquid.setGravity(e.getValue());
+			liquid.setGravityY(e.getValue());
 		}
 		
 		if (ControlPanel.STIFFNESS.equals(e.getName())) {
@@ -73,6 +73,14 @@ public class TheOne extends JFrame implements ControlsListener {
 		
 		if (ControlPanel.BETA.equals(e.getName())) {
 			liquid.setBeta(e.getValue());
+		}
+		
+		if (ControlPanel.ROTATION.equals(e.getName())) {
+			canvas.setRotationAngle(e.getValue());
+			float x = (float) (.06f*Math.sin(e.getValue()));
+			float y = (float) (.06f*Math.cos(e.getValue()));
+			liquid.setGravityX(x);
+			liquid.setGravityY(y);
 		}
 
 	}
