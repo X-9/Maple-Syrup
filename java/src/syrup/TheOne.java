@@ -100,8 +100,8 @@ public class TheOne extends JFrame implements ControlsListener {
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent arg0) {
-			super.mouseReleased(arg0);
+		public void mouseReleased(MouseEvent e) {
+			super.mouseReleased(e);
 			liquid.setAttractor(new Vector2D(-1f, -1f));
 		}
 		

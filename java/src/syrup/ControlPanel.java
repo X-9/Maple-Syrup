@@ -86,7 +86,7 @@ public class ControlPanel extends JPanel {
 		box.add(make(STIFFNESS, new Float[] {.004f, .001f, 1f, .001f}));
 		box.add(make(SIGMA, new Float[] {.0f, -1f, 10f, .01f}));
 		box.add(make(BETA, new Float[] {.3f, .01f, 10f, .01f}));
-		box.add(make(ROTATION, new Float[] {0f, 0f, 6.3f, .1f}));
+		box.add(make(ROTATION, new Float[] {0f, 0f, 6.2f, .1f}));
 		add(box);
 	}
 	

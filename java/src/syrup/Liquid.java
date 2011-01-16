@@ -85,28 +85,31 @@ public class Liquid implements Idle {
 	 * @param p Particle to check.
 	 */
 	private void wallCollision(Particle p) {
-		// Liquid dimencion
+		// Liquid dimension.
 		Dimension size = getSize();
 		
-		// Add small padding to liquid size, because
-		// particle position identify upper left corner of particle
-		size.width 	-= Particle.r;
-		size.height -= Particle.r;
+		// Spatial hash table can only operate positive values, so keep particles
+		// away from top and left borders.
+		int vpadding = 20;
+		int hpadding = 20;
+		
+		// opposite force coefficient [0, n), bigger number gives less strong force 
+		float k = 2;
 
-		if (p.p.x > size.width) {
-			p.f.substract(new Vector2D((p.p.x-size.width)/2, 0));
+		if (p.p.x > size.width-hpadding) {
+			p.f.substract(new Vector2D((p.p.x-(size.width-hpadding))/k, 0));
 		}
 		
-		if (p.p.x < 20) {
-			p.f.add(new Vector2D((20-p.p.x)/2, 0));
+		if (p.p.x < hpadding) {
+			p.f.add(new Vector2D((hpadding-p.p.x)/k, 0));
 		}
 		
-		if (p.p.y > size.height) {
-			p.f.substract(new Vector2D(0, (p.p.y-size.height)/2));
+		if (p.p.y > size.height-vpadding) {
+			p.f.substract(new Vector2D(0, (p.p.y-(size.height-vpadding))/k));
 		}
 		
-		if (p.p.y < 20) {
-			p.f.add(new Vector2D(0, (20-p.p.y)/2));
+		if (p.p.y < vpadding) {
+			p.f.add(new Vector2D(0, (vpadding-p.p.y)/k));
 		}
 	}
 
