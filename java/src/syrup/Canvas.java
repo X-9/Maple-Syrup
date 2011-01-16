@@ -1,14 +1,10 @@
 package syrup;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
@@ -23,7 +19,8 @@ public class Canvas extends JComponent implements Render {
 	private final BufferedImage foreground;
 	private final Graphics2D canvas;			// draw elements on this canvas
 	private final AffineTransform transformer;	// use it to rotate layouts
-	private Dimension size;
+	private Dimension lsize;						// layouts size
+	private double theta;						// absolute rotation angle in radians
 	private long diff = 0;						// fps
 	
 	
@@ -35,21 +32,22 @@ public class Canvas extends JComponent implements Render {
 		
 		this.elements = elements;
 		
-		size = new Dimension(200, 300);
+		// 
+		lsize = new Dimension(200, 300);
 		
-		background = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
-		foreground = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+		// obviously two layouts
+		background = new BufferedImage(lsize.width, lsize.height, BufferedImage.TYPE_INT_RGB);
+		foreground = new BufferedImage(lsize.width, lsize.height, BufferedImage.TYPE_INT_ARGB);
 		
 		canvas = (Graphics2D)foreground.getGraphics();	// make paint work on foreground
 		
-		transformer = canvas.getTransform();
-
+		transformer = canvas.getTransform();			// transformation object
+		theta = 0;										// initial rotation angle
+		
+		// draw background
 		initBackground();
 		
-		MouseRotate mr = new MouseRotate();
-		addMouseMotionListener(mr);
-		addMouseListener(mr);
-		
+		// repaint canvas manually only
 		setIgnoreRepaint(true);
 	}
 	
@@ -65,13 +63,25 @@ public class Canvas extends JComponent implements Render {
 		g2.setRenderingHints(rh);
 		
 		g2.setColor(Color.WHITE);
-		g2.fillRect(0, 0, size.width, size.height);
+		g2.fillRect(0, 0, lsize.width, lsize.height);
 		
 		g2.setColor(Color.BLACK);
-		g2.drawRect(1, 1, size.width-2, size.height-2);
-		g2.drawLine(size.width/2-10, size.height/2, size.width/2+10, size.height/2);
-		g2.drawLine(size.width/2, size.height/2-10, size.width/2, size.height/2+10);
+		g2.drawRect(1, 1, lsize.width-2, lsize.height-2);
+		g2.drawLine(lsize.width/2-10, lsize.height/2, lsize.width/2+10, lsize.height/2);
+		g2.drawLine(lsize.width/2, lsize.height/2-10, lsize.width/2, lsize.height/2+10);
 		
+	}
+	
+	public void addRotationAngle(double d) {
+		// rotate to relative angle
+		transformer.rotate(d, getWidth()/2, getHeight()/2);
+		
+		// add difference to absolute angle, take mod to avoid overflow
+		theta = (theta+d)%(2*Math.PI);
+	}
+	
+	public double getAbsoluteAngle() {
+		return theta;
 	}
 	
 	@Override
@@ -88,7 +98,7 @@ public class Canvas extends JComponent implements Render {
 	protected void paintComponent(Graphics g) {
 		// clear screen, filling it with default background colour
 		canvas.setBackground(new Color(0, 0, 0, 0));
-		canvas.clearRect(0, 0, size.width, size.height);
+		canvas.clearRect(0, 0, lsize.width, lsize.height);
 		
 		final float c = Particle.r/2;	// find centre of particle
 		final float s = Particle.r;		// particle size
@@ -113,32 +123,5 @@ public class Canvas extends JComponent implements Render {
 		diff = System.currentTimeMillis();
 		
 		g2.dispose();
-	}
-	
-	private class MouseRotate extends MouseAdapter {
-		private double start;
-		
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			super.mouseDragged(e);
-
-			double finish = getRadianAngle(new Point(200, 200), e.getPoint());
-			transformer.rotate(finish-start, 200, 200);
-			start = finish;
-		}
-		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			super.mousePressed(e);
-		
-			start = getRadianAngle(new Point(200, 200), e.getPoint());
-		}
-		
-		private double getRadianAngle(Point c, Point p) {
-			double dx = c.getX() - p.getX();
-			double dy = c.getY() - p.getY();
-			
-			return Math.atan2(dy, dx);
-		}
-	}
+	}	
 }

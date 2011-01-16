@@ -1,6 +1,7 @@
 package syrup;
 
 import java.awt.BorderLayout;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -37,9 +38,12 @@ public class TheOne extends JFrame implements ControlsListener {
 		ControlPanel cp = new ControlPanel();
 		cp.addControlsListener(this);
 		canvas.setPreferredSize(liquid.getSize());
-		MouseHandler mouseHandler = new MouseHandler();
-		canvas.addMouseListener(mouseHandler);
-		canvas.addMouseMotionListener(mouseHandler);
+		MouseRotate mr = new MouseRotate();
+		canvas.addMouseListener(mr);
+		canvas.addMouseMotionListener(mr);
+		//MouseHandler mouseHandler = new MouseHandler();
+		//canvas.addMouseListener(mouseHandler);
+		//canvas.addMouseMotionListener(mouseHandler);
 		add(canvas, BorderLayout.CENTER);
 		add(cp, BorderLayout.EAST);
 		pack();
@@ -108,6 +112,46 @@ public class TheOne extends JFrame implements ControlsListener {
 		}
 		
 	}
+	
+	private class MouseRotate extends MouseAdapter {
+		private double start;
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			super.mouseDragged(e);
+			
+			// calculate relative rotation angle
+			Point centre = new Point(canvas.getWidth()/2, canvas.getHeight()/2);
+			double finish = getRadianAngle(centre, e.getPoint());
+			
+			canvas.addRotationAngle(finish-start);	// add relative angle
+			
+			// however new gravity could be found with absolute rotation angle
+			float gx = (float) (.06f*Math.sin(canvas.getAbsoluteAngle()));
+			float gy = (float) (.06f*Math.cos(canvas.getAbsoluteAngle()));
+			
+			// set new gravity forces to liquid
+			liquid.setGravityX(gx);
+			liquid.setGravityY(gy);
+			
+			start = finish;
+		}
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			super.mousePressed(e);
+		
+			start = getRadianAngle(new Point(200, 200), e.getPoint());
+		}
+		
+		private double getRadianAngle(Point c, Point p) {
+			double dx = c.getX() - p.getX();
+			double dy = c.getY() - p.getY();
+			
+			return Math.atan2(dy, dx);
+		}
+	}
+
 	
 	public static void main(String[] args) {
 		TheOne one = new TheOne();
