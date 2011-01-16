@@ -75,6 +75,7 @@ public class TheOne extends JFrame implements ControlsListener {
 			liquid.setBeta(e.getValue());
 		}
 		
+		/*
 		if (ControlPanel.ROTATION.equals(e.getName())) {
 			canvas.setRotationAngle(e.getValue());
 			float x = (float) (.06f*Math.sin(e.getValue()));
@@ -82,6 +83,7 @@ public class TheOne extends JFrame implements ControlsListener {
 			liquid.setGravityX(x);
 			liquid.setGravityY(y);
 		}
+		*/
 
 	}
 	

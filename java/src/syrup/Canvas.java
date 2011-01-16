@@ -1,10 +1,14 @@
 package syrup;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
@@ -18,8 +22,8 @@ public class Canvas extends JComponent implements Render {
 	private final BufferedImage background;
 	private final BufferedImage foreground;
 	private final Graphics2D canvas;			// draw elements on this canvas
+	private final AffineTransform transformer;	// use it to rotate layouts
 	private Dimension size;
-	private float theta;						// rotation angle in radiant
 	private long diff = 0;						// fps
 	
 	
@@ -37,10 +41,14 @@ public class Canvas extends JComponent implements Render {
 		foreground = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
 		
 		canvas = (Graphics2D)foreground.getGraphics();	// make paint work on foreground
+		
+		transformer = canvas.getTransform();
 
 		initBackground();
 		
-		theta = 0f;
+		MouseRotate mr = new MouseRotate();
+		addMouseMotionListener(mr);
+		addMouseListener(mr);
 		
 		setIgnoreRepaint(true);
 	}
@@ -66,8 +74,9 @@ public class Canvas extends JComponent implements Render {
 		
 	}
 	
-	public void setRotationAngle(float angle) {
-		theta = angle;
+	@Override
+	public Dimension getPreferredSize() {
+		return new Dimension(400, 400);
 	}
 	
 	@Override
@@ -94,10 +103,6 @@ public class Canvas extends JComponent implements Render {
 		Graphics2D g2 = (Graphics2D)g;
 		
 		// rotate image
-		AffineTransform transformer = new AffineTransform();
-		int anchorx = 200;//size.width/2;	// find rotation centre
-		int anchory = 200;//size.height/2;
-		transformer.rotate(theta, anchorx, anchory);
 		g2.setTransform(transformer);
 		
 		g2.drawImage(background, 100, 50, this);	// draw buffered background
@@ -110,4 +115,30 @@ public class Canvas extends JComponent implements Render {
 		g2.dispose();
 	}
 	
+	private class MouseRotate extends MouseAdapter {
+		private double start;
+		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			super.mouseDragged(e);
+
+			double finish = getRadianAngle(new Point(200, 200), e.getPoint());
+			transformer.rotate(finish-start, 200, 200);
+			start = finish;
+		}
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			super.mousePressed(e);
+		
+			start = getRadianAngle(new Point(200, 200), e.getPoint());
+		}
+		
+		private double getRadianAngle(Point c, Point p) {
+			double dx = c.getX() - p.getX();
+			double dy = c.getY() - p.getY();
+			
+			return Math.atan2(dy, dx);
+		}
+	}
 }
