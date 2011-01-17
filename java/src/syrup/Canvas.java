@@ -23,7 +23,7 @@ public class Canvas extends JComponent implements Render {
 	private final Point zero;					//
 	private Dimension lsize;					// layouts size
 	private double theta;						// absolute rotation angle in radians
-	private long diff = 0;						// fps
+	//private long diff = 0;						// fps
 	
 	
 	public Canvas(final Iterable<Particle> elements) {
@@ -142,8 +142,8 @@ public class Canvas extends JComponent implements Render {
 		g2.drawImage(foreground, zero.x, zero.y, this);	// and foreground
 		
 		// calculate fps :)
-		g2.drawString(String.valueOf(System.currentTimeMillis()-diff), 20, 20);
-		diff = System.currentTimeMillis();
+		//g2.drawString(String.valueOf(System.currentTimeMillis()-diff), 20, 20);
+		//diff = System.currentTimeMillis();
 		
 		g2.dispose();
 	}

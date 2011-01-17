@@ -169,7 +169,6 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println(e.getActionCommand());
 		if (InstrumentPanel.MAGNET.equals(e.getActionCommand())) {
 			mouseOptions = MouseOptions.MAGNET;
 		}

@@ -2,12 +2,12 @@ package syrup;
 
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.Hashtable;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
@@ -42,7 +42,7 @@ public class ControlPanel extends JPanel {
 	
 	public static final String GRAVITY 			= "Gravity";
 	public static final String RADIUS 			= "Interaction Radius";
-	public static final String DENSITY 			= "Rest Density";
+	public static final String DENSITY 			= "Density";
 	public static final String STIFFNESS 		= "Stiffness";
 	public static final String STIFFNESS_NEAR 	= "Stiffness Near";
 	public static final String SIGMA 			= "Sigma";
@@ -58,35 +58,31 @@ public class ControlPanel extends JPanel {
 		initGui();
 	}
 	
-	private Box make(final String name, Float[] limits) {
-		if (limits.length != 4) {
-			throw new IllegalArgumentException();
-		}
-		JSpinner spinner = new JSpinner(new SpinnerNumberModel(limits[0], limits[1], limits[2], limits[3]));
-		spinner.addChangeListener(new ChangeListener() {
+	private JSlider makeSlider(final String name, float init, float min, float max, final float scale) {
+		JSlider slider = new JSlider(JSlider.HORIZONTAL, (int)(min*scale), (int)(max*scale), (int)(init*scale));
+		slider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				float value = (Float)((JSpinner)e.getSource()).getValue();
+				float value = ((JSlider)e.getSource()).getValue()/scale;
 				fireEvent(new ControlsEvent(this, name, (float)value));	
 			}
 		});
-		Box box = Box.createHorizontalBox();
-		box.add(new JLabel(name));
-		box.add(Box.createHorizontalGlue());
-		box.add(spinner);
-	
-		return box;
+		Hashtable<Integer, JLabel> labels = new Hashtable<Integer, JLabel>();
+		labels.put(new Integer((int)((max*scale+min*scale)/2)), new JLabel(name));
+		slider.setLabelTable(labels);
+		slider.setPaintLabels(true);
+		
+		return slider;
 	}
 
 	private void initGui() {
 		Box box = Box.createVerticalBox();
-		box.add(make(GRAVITY, new Float[] {.06f, .01f, 5f, .01f}));
-		box.add(make(RADIUS, new Float[] {11f, 1f, 20f, 1f}));
-		box.add(make(DENSITY, new Float[] {10f, .01f, 20f, .01f}));
-		box.add(make(STIFFNESS, new Float[] {.004f, .001f, 1f, .001f}));
-		box.add(make(SIGMA, new Float[] {.0f, -1f, 10f, .01f}));
-		box.add(make(BETA, new Float[] {.3f, .01f, 10f, .01f}));
-		box.add(make(ROTATION, new Float[] {0f, 0f, 6.2f, .1f}));
+		box.add(makeSlider(GRAVITY, .06f, .01f, .1f, 100));
+		box.add(makeSlider(RADIUS, 11f, 6f, 12f, 1));
+		box.add(makeSlider(DENSITY, 10f, .01f, 20f, 10));
+		box.add(makeSlider(STIFFNESS, .004f, .001f, .01f, 1000));
+		box.add(makeSlider(SIGMA, .0f, 0f, 2f, 1));
+		box.add(makeSlider(BETA, .3f, .1f, .5f, 100));
 		add(box);
 	}
 	
@@ -104,5 +100,4 @@ public class ControlPanel extends JPanel {
 			listener.controlsPerformed(e);
 		}
 	}
-	
 }
