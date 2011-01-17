@@ -9,7 +9,7 @@ abstract interface Render {
 }
 
 public class Loop implements Runnable {
-	static private final int DELAY = 10;
+	static private final int DELAY = 25;
 	
 	private final Idle idle;
 	private final Render render;

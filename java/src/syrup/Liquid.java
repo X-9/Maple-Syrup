@@ -25,9 +25,13 @@ public class Liquid implements Idle {
 	private float k_ = k*10f;						// yet another parameter
 	private float sigma = 0f;						// sigma
 	private float beta = .3f;						// beta
+	private int n = 0;								// number of particles
+	private int hpadding = 20;						// keep particles away from border
+	private int vpadding = 20;
 	
 	private final SpatialTable<Particle> particles;
 	private Vector2D attractor;
+	private Vector2D emitter;
 	
 	
 	// Getters and setters
@@ -48,6 +52,7 @@ public class Liquid implements Idle {
 		particles = table;
 		
 		attractor = new Vector2D(-1, -1); // mouse out of liquid world
+		emitter = new Vector2D(-1, -1);
 	}
 	
 	private static float rand() {
@@ -58,24 +63,32 @@ public class Liquid implements Idle {
 		return new Dimension(200, 300);
 	}
 	
-	public void populate() {
+	public void beginEmit(float x, float y) {
+		emitter = new Vector2D(x, y);
+	}
+	
+	public void endEmit() {
+		emitter = new Vector2D(-1, -1);
+	}
+	
+	private void populate() {
+		if (n > 1500) return;
 		
 		Dimension size = getSize();
-		int step = 5, i = 0;
-		int N = 1500;
-		for (int x = 30; x < size.width; x += step) {
-			for (int y = 30; y < size.height && N > 0; y += step, ++i) {
-				Particle p = new Particle();
-				p.p = new Vector2D(x, y);
-				p.pp = new Vector2D(x+rand(), y+rand());
-				p.f = new Vector2D(0, 0);
-				p.v = p.p.minus(p.pp);
-				particles.add(p);
-				N--;
-			}
-		}
 		
-		System.out.println("Populated: " + i + " particles");
+		// Do nothing if user moved cursor position out of world size
+		if (emitter.x < hpadding || emitter.x > size.width-hpadding)  return;
+		if (emitter.y < vpadding || emitter.y > size.height-vpadding) return;
+		
+		// generate 10 paticles
+		for (int i = 0; i < 10; ++i, ++n) {
+			Particle p = new Particle();
+			p.p = new Vector2D(emitter.x+rand()*10, emitter.y+rand()*10);
+			p.pp = p.p.clone();
+			p.f = new Vector2D(0, 0);
+			p.v = p.p.minus(p.pp);
+			particles.add(p);
+		}
 	}
 	
 	/**
@@ -87,11 +100,6 @@ public class Liquid implements Idle {
 	private void wallCollision(Particle p) {
 		// Liquid dimension.
 		Dimension size = getSize();
-		
-		// Spatial hash table can only operate positive values, so keep particles
-		// away from top and left borders.
-		int vpadding = 20;
-		int hpadding = 20;
 		
 		// opposite force coefficient [0, n), bigger number gives less strong force 
 		float k = 2;
@@ -118,15 +126,15 @@ public class Liquid implements Idle {
 	 * 
 	 * @param p Particle to attract.
 	 */
-	public void attract(Particle p) {
+	private void attract(Particle p) {
 		final int rsqrd = 2500;	// squared size of attraction length
 		final float k = .005f;	// coefficient of attraction
 		
 		Dimension size = getSize();
 		
 		// Do nothing if user moved cursor position out of world size
-		if (attractor.x < 0 || attractor.x > size.width)  return;
-		if (attractor.y < 0 || attractor.y > size.height) return;
+		if (attractor.x < hpadding || attractor.x > size.width-hpadding)  return;
+		if (attractor.y < hpadding || attractor.y > size.height-hpadding) return;
 		
 		if (attractor.minus(p.p).lengthSquared() < rsqrd) {
 			p.f.add(attractor.minus(p.p).scale(k));	
@@ -135,6 +143,9 @@ public class Liquid implements Idle {
 	
 	@Override
 	public void move() {
+		// add new particles
+		populate();
+		
 		// apply viscosity
 		viscosity();
 		

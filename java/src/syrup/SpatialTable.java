@@ -55,7 +55,8 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 	 */
 	public boolean add(V value) {
 		addInterRadius(value);
-		return table.add(value);
+		table.listIterator(table.size()).add(value);
+		return true;
 	}
 	
 	/**

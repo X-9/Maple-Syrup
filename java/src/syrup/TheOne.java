@@ -2,17 +2,23 @@ package syrup;
 
 import java.awt.BorderLayout;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JFrame;
 
-public class TheOne extends JFrame implements ControlsListener {
+public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	private Liquid liquid;	// Main engine
-	private Canvas canvas;	// Draws elements on the screen
-	private Loop loop;		// What could it be?
+	private final Liquid liquid;	// Main engine
+	private final Canvas canvas;	// Draws elements on the screen
+	private final Loop loop;		// What could it be?
+	
+	private final MouseRotate mouseRotate;
+	private final MouseMagnet mouseMagnet;
+	private final MouseEmitter mouseEmitter;
 	
 	public TheOne() {
 		// Collection contains all liquid elements
@@ -38,18 +44,20 @@ public class TheOne extends JFrame implements ControlsListener {
 		ControlPanel cp = new ControlPanel();
 		cp.addControlsListener(this);
 		canvas.setPreferredSize(liquid.getSize());
-		MouseRotate mr = new MouseRotate();
-		canvas.addMouseListener(mr);
-		canvas.addMouseMotionListener(mr);
-		//MouseHandler mouseHandler = new MouseHandler();
-		//canvas.addMouseListener(mouseHandler);
-		//canvas.addMouseMotionListener(mouseHandler);
+		
+		InstrumentPanel ip = new InstrumentPanel();
+		ip.addActionListener(this);
+		
+		mouseRotate = new MouseRotate();
+		mouseMagnet = new MouseMagnet();
+		mouseEmitter = new MouseEmitter();
+
 		add(canvas, BorderLayout.CENTER);
 		add(cp, BorderLayout.EAST);
+		add(ip, BorderLayout.WEST);
 		pack();
 		
 		// Start The Ignition
-		liquid.populate();
 		loop.start();
 	}
 	
@@ -79,19 +87,34 @@ public class TheOne extends JFrame implements ControlsListener {
 			liquid.setBeta(e.getValue());
 		}
 		
-		/*
-		if (ControlPanel.ROTATION.equals(e.getName())) {
-			canvas.setRotationAngle(e.getValue());
-			float x = (float) (.06f*Math.sin(e.getValue()));
-			float y = (float) (.06f*Math.cos(e.getValue()));
-			liquid.setGravityX(x);
-			liquid.setGravityY(y);
-		}
-		*/
-
 	}
 	
-	private class MouseHandler extends MouseAdapter {
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (InstrumentPanel.MAGNET.equals(e.getActionCommand())) {
+			canvas.removeMouseListener(mouseRotate);
+			canvas.removeMouseMotionListener(mouseRotate);
+			
+			canvas.addMouseListener(mouseMagnet);
+			canvas.addMouseMotionListener(mouseMagnet);
+		}
+		
+		if (InstrumentPanel.ROTATOR.equals(e.getActionCommand())) {
+			canvas.removeMouseListener(mouseMagnet);
+			canvas.removeMouseMotionListener(mouseRotate);
+			
+			canvas.addMouseListener(mouseRotate);
+			canvas.addMouseMotionListener(mouseRotate);
+		}
+		
+		if (InstrumentPanel.EMITTER.equals(e.getActionCommand())) {
+			canvas.addMouseListener(mouseEmitter);
+			canvas.addMouseMotionListener(mouseEmitter);
+		}
+		
+	}
+	
+	private class MouseMagnet extends MouseAdapter {
 		
 		@Override
 		public void mouseDragged(MouseEvent e) {
@@ -102,7 +125,8 @@ public class TheOne extends JFrame implements ControlsListener {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			super.mousePressed(e);
-			liquid.setAttractor(new Vector2D(e.getPoint().x, e.getPoint().y));
+			Point p = canvas.projection(e.getPoint());
+			liquid.setAttractor(new Vector2D(p.x, p.y));
 		}
 
 		@Override
@@ -111,6 +135,30 @@ public class TheOne extends JFrame implements ControlsListener {
 			liquid.setAttractor(new Vector2D(-1f, -1f));
 		}
 		
+	}
+	
+	private class MouseEmitter extends MouseAdapter {
+		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			super.mouseDragged(e);
+			mousePressed(e);
+		}
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			super.mousePressed(e);
+			Point p = canvas.projection(e.getPoint());
+			liquid.beginEmit(p.x, p.y);
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			super.mouseReleased(e);
+			liquid.endEmit();
+		}
+		
+
 	}
 	
 	private class MouseRotate extends MouseAdapter {
@@ -159,5 +207,4 @@ public class TheOne extends JFrame implements ControlsListener {
 		
 		one.setVisible(true);
 	}
-
 }

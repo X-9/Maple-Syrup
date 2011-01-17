@@ -2,11 +2,12 @@ package syrup;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
@@ -19,7 +20,8 @@ public class Canvas extends JComponent implements Render {
 	private final BufferedImage foreground;
 	private final Graphics2D canvas;			// draw elements on this canvas
 	private final AffineTransform transformer;	// use it to rotate layouts
-	private Dimension lsize;						// layouts size
+	private final Point zero;					//
+	private Dimension lsize;					// layouts size
 	private double theta;						// absolute rotation angle in radians
 	private long diff = 0;						// fps
 	
@@ -32,8 +34,8 @@ public class Canvas extends JComponent implements Render {
 		
 		this.elements = elements;
 		
-		// 
 		lsize = new Dimension(200, 300);
+		zero = new Point(100, 50);
 		
 		// obviously two layouts
 		background = new BufferedImage(lsize.width, lsize.height, BufferedImage.TYPE_INT_RGB);
@@ -80,6 +82,25 @@ public class Canvas extends JComponent implements Render {
 		theta = (theta+d)%(2*Math.PI);
 	}
 	
+	public Point projection(Point p) {
+		Point result = (Point)p.clone();
+		try {
+			transformer.createInverse().transform(p, result);
+		} catch (NoninvertibleTransformException e) {
+			return result;
+		}
+		
+		result.x -= zero.x;
+		result.y -= zero.y;
+		return result;
+	}
+	
+	public Point translate(Point p) {
+		Point result = (Point)p.clone();
+		transformer.transform(p, result);
+		return result;
+	}
+	
 	public double getAbsoluteAngle() {
 		return theta;
 	}
@@ -90,15 +111,13 @@ public class Canvas extends JComponent implements Render {
 	}
 	
 	@Override
+	/**
+	 * Use passive rendering, because Java repaints component in separate thread.
+	 */
 	public void display() {
-		repaint();
-	}
-
-	@Override
-	protected void paintComponent(Graphics g) {
 		// clear screen, filling it with default background colour
 		canvas.setBackground(new Color(0, 0, 0, 0));
-		canvas.clearRect(0, 0, lsize.width, lsize.height);
+		canvas.clearRect(0, 0, getWidth(), getHeight());
 		
 		final float c = Particle.r/2;	// find centre of particle
 		final float s = Particle.r;		// particle size
@@ -110,18 +129,20 @@ public class Canvas extends JComponent implements Render {
 			canvas.fill(e);
 		}
 		
-		Graphics2D g2 = (Graphics2D)g;
+		Graphics2D g2 = (Graphics2D)getGraphics();
+		
+		g2.clearRect(0, 0, 400, 400);
 		
 		// rotate image
 		g2.setTransform(transformer);
 		
-		g2.drawImage(background, 100, 50, this);	// draw buffered background
-		g2.drawImage(foreground, 100, 50, this);	// and foreground
+		g2.drawImage(background, zero.x, zero.y, this);	// draw buffered background
+		g2.drawImage(foreground, zero.x, zero.y, this);	// and foreground
 		
 		// calculate fps :)
 		g2.drawString(String.valueOf(System.currentTimeMillis()-diff), 20, 20);
 		diff = System.currentTimeMillis();
 		
 		g2.dispose();
-	}	
+	}
 }
