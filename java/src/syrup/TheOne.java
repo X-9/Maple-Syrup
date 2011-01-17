@@ -12,50 +12,128 @@ import javax.swing.JFrame;
 public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	private static final long serialVersionUID = 1L;
 
-	private final Liquid liquid;	// Main engine
-	private final Canvas canvas;	// Draws elements on the screen
-	private final Loop loop;		// What could it be?
+	// Collection contains all liquid elements
+	private final static SpatialTable<Particle> particles = new SpatialTable<Particle>(200, 300) {
+		private final static int CELL_SIZE = 10;
+		
+		@Override
+		protected int posX(Particle value) {
+			return (int)((value.p.x+.3f)/CELL_SIZE);
+		}
+
+		@Override
+		protected int posY(Particle value) {
+			return (int)((value.p.y+.3f)/CELL_SIZE);
+		}
+	};
 	
-	private final MouseRotate mouseRotate;
-	private final MouseMagnet mouseMagnet;
-	private final MouseEmitter mouseEmitter;
+	private final static Liquid liquid = new Liquid(particles);	// Main engine
+	private final static Canvas canvas = new Canvas(particles);	// Draws elements on the screen
+	private final static Loop loop = new Loop(liquid, canvas);	// What could it be?
 	
-	public TheOne() {
-		// Collection contains all liquid elements
-		final SpatialTable<Particle> particles = new SpatialTable<Particle>(200, 300) {
-			private final static int CELL_SIZE = 10;
-			
+	private MouseOptions mouseOptions;							// Set of available mouse options
+	
+	private enum MouseOptions {
+		EMITTER() {
 			@Override
-			protected int posX(Particle value) {
-				return (int)((value.p.x+.3f)/CELL_SIZE);
+			public void pressed(MouseEvent e) {
+				Point p = canvas.projection(e.getPoint());
+				liquid.beginEmit(p.x, p.y);
 			}
 
 			@Override
-			protected int posY(Particle value) {
-				return (int)((value.p.y+.3f)/CELL_SIZE);
+			public void dragged(MouseEvent e) {
+				pressed(e);
+			}
+
+			@Override
+			public void released(MouseEvent e) {
+				liquid.endEmit();
+			}
+			
+		},
+		MAGNET() {
+			@Override
+			public void pressed(MouseEvent e) {
+				Point p = canvas.projection(e.getPoint());
+				liquid.setAttractor(new Vector2D(p.x, p.y));
+			}
+
+			@Override
+			public void dragged(MouseEvent e) {
+				pressed(e);
+			}
+
+			@Override
+			public void released(MouseEvent e) {
+				liquid.setAttractor(new Vector2D(-1f, -1f));
+			}
+			
+		},		
+		ROTATE() {
+			private double start = 0;
+			
+			@Override
+			public void pressed(MouseEvent e) {
+				start = getRadianAngle(new Point(200, 200), e.getPoint());
+			}
+
+			@Override
+			public void dragged(MouseEvent e) {
+				// calculate relative rotation angle
+				Point centre = new Point(canvas.getWidth()/2, canvas.getHeight()/2);
+				double finish = getRadianAngle(centre, e.getPoint());
+				
+				canvas.addRotationAngle(finish-start);	// add relative angle
+				
+				// however new gravity could be found with absolute rotation angle
+				float gx = (float) (.06f*Math.sin(canvas.getAbsoluteAngle()));
+				float gy = (float) (.06f*Math.cos(canvas.getAbsoluteAngle()));
+				
+				// set new gravity forces to liquid
+				liquid.setGravityX(gx);
+				liquid.setGravityY(gy);
+				
+				start = finish;
+			}
+
+			@Override
+			public void released(MouseEvent e) {
+				
+			}
+			
+			private double getRadianAngle(Point c, Point p) {
+				double dx = c.getX() - p.getX();
+				double dy = c.getY() - p.getY();
+				
+				return Math.atan2(dy, dx);
 			}
 		};
 		
-		liquid = new Liquid(particles);	
-		canvas = new Canvas(particles);
-		loop = new Loop(liquid, canvas);
-		
+		public abstract void pressed(MouseEvent e);
+		public abstract void dragged(MouseEvent e);
+		public abstract void released(MouseEvent e);
+	};
+	
+	public TheOne() {
 		// Build GUI
 		ControlPanel cp = new ControlPanel();
 		cp.addControlsListener(this);
 		canvas.setPreferredSize(liquid.getSize());
 		
-		InstrumentPanel ip = new InstrumentPanel();
-		ip.addActionListener(this);
-		
-		mouseRotate = new MouseRotate();
-		mouseMagnet = new MouseMagnet();
-		mouseEmitter = new MouseEmitter();
+		InstrumentPanel np = new InstrumentPanel();
+		np.addActionListener(this);
 
+		MouseTool mouseTool = new MouseTool();
+		canvas.addMouseListener(mouseTool);
+		canvas.addMouseMotionListener(mouseTool);
+		
 		add(canvas, BorderLayout.CENTER);
 		add(cp, BorderLayout.EAST);
-		add(ip, BorderLayout.WEST);
+		add(np, BorderLayout.WEST);
 		pack();
+		
+		mouseOptions = MouseOptions.EMITTER;
 		
 		// Start The Ignition
 		loop.start();
@@ -91,115 +169,42 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		System.out.println(e.getActionCommand());
 		if (InstrumentPanel.MAGNET.equals(e.getActionCommand())) {
-			canvas.removeMouseListener(mouseRotate);
-			canvas.removeMouseMotionListener(mouseRotate);
-			
-			canvas.addMouseListener(mouseMagnet);
-			canvas.addMouseMotionListener(mouseMagnet);
+			mouseOptions = MouseOptions.MAGNET;
 		}
 		
 		if (InstrumentPanel.ROTATOR.equals(e.getActionCommand())) {
-			canvas.removeMouseListener(mouseMagnet);
-			canvas.removeMouseMotionListener(mouseRotate);
-			
-			canvas.addMouseListener(mouseRotate);
-			canvas.addMouseMotionListener(mouseRotate);
+			mouseOptions = MouseOptions.ROTATE;
 		}
 		
 		if (InstrumentPanel.EMITTER.equals(e.getActionCommand())) {
-			canvas.addMouseListener(mouseEmitter);
-			canvas.addMouseMotionListener(mouseEmitter);
+			mouseOptions = MouseOptions.EMITTER;
 		}
-		
 	}
 	
-	private class MouseMagnet extends MouseAdapter {
-		
+	private class MouseTool extends MouseAdapter {
+
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			super.mouseDragged(e);
-			mousePressed(e);
+			mouseOptions.dragged(e);
 		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {
 			super.mousePressed(e);
-			Point p = canvas.projection(e.getPoint());
-			liquid.setAttractor(new Vector2D(p.x, p.y));
+			mouseOptions.pressed(e);
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			super.mouseReleased(e);
-			liquid.setAttractor(new Vector2D(-1f, -1f));
+			mouseOptions.released(e);
 		}
 		
 	}
 	
-	private class MouseEmitter extends MouseAdapter {
-		
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			super.mouseDragged(e);
-			mousePressed(e);
-		}
-		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			super.mousePressed(e);
-			Point p = canvas.projection(e.getPoint());
-			liquid.beginEmit(p.x, p.y);
-		}
-		
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			super.mouseReleased(e);
-			liquid.endEmit();
-		}
-		
-
-	}
-	
-	private class MouseRotate extends MouseAdapter {
-		private double start;
-
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			super.mouseDragged(e);
-			
-			// calculate relative rotation angle
-			Point centre = new Point(canvas.getWidth()/2, canvas.getHeight()/2);
-			double finish = getRadianAngle(centre, e.getPoint());
-			
-			canvas.addRotationAngle(finish-start);	// add relative angle
-			
-			// however new gravity could be found with absolute rotation angle
-			float gx = (float) (.06f*Math.sin(canvas.getAbsoluteAngle()));
-			float gy = (float) (.06f*Math.cos(canvas.getAbsoluteAngle()));
-			
-			// set new gravity forces to liquid
-			liquid.setGravityX(gx);
-			liquid.setGravityY(gy);
-			
-			start = finish;
-		}
-		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			super.mousePressed(e);
-		
-			start = getRadianAngle(new Point(200, 200), e.getPoint());
-		}
-		
-		private double getRadianAngle(Point c, Point p) {
-			double dx = c.getX() - p.getX();
-			double dy = c.getY() - p.getY();
-			
-			return Math.atan2(dy, dx);
-		}
-	}
-
 	
 	public static void main(String[] args) {
 		TheOne one = new TheOne();

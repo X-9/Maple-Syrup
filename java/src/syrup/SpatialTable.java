@@ -92,6 +92,7 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 			for (int j = -1; j < 2; ++j) {
 				int x = posX(value)+i;
 				int y = posY(value)+j;
+				if (x < 0 || y < 0) continue;
 				if (null == nearby[x][y]) {
 					nearby[x][y] = new ArrayList<V>(INIT_NEARBY_SIZE);
 				}

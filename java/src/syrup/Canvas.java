@@ -125,7 +125,9 @@ public class Canvas extends JComponent implements Render {
 		// draw all particles on the canvas
 		for (Particle p : elements) {
 			Ellipse2D e = new Ellipse2D.Float(p.p.x-c, p.p.y-c, s, s);
-			canvas.setColor(new Color(0, 255-(int)(p.rho*15%255), 254));
+			int green = 255-(int)p.rho*15;
+			green = (green < 0) ? 0 : green;
+			canvas.setColor(new Color(0, green, 255));
 			canvas.fill(e);
 		}
 		
