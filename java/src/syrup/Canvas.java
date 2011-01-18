@@ -2,6 +2,7 @@ package syrup;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -23,7 +24,7 @@ public class Canvas extends JComponent implements Render {
 	private final Point zero;					//
 	private Dimension lsize;					// layouts size
 	private double theta;						// absolute rotation angle in radians
-	//private long diff = 0;						// fps
+	private long diff = 0;						// fps
 	
 	
 	public Canvas(final Iterable<Particle> elements) {
@@ -110,9 +111,13 @@ public class Canvas extends JComponent implements Render {
 		return new Dimension(400, 400);
 	}
 	
+	@Override protected void paintComponent(Graphics g) {
+		System.err.println("WHAT?!");
+	}
+	
 	@Override
 	/**
-	 * Use passive rendering, because Java repaints component in separate thread.
+	 * Use active rendering, because Java repaints component in separate thread.
 	 */
 	public void display() {
 		// clear screen, filling it with default background colour
@@ -133,17 +138,17 @@ public class Canvas extends JComponent implements Render {
 		
 		Graphics2D g2 = (Graphics2D)getGraphics();
 		
-		g2.clearRect(0, 0, 400, 400);
+		g2.clearRect(0, 0, getWidth(), getHeight());
 		
 		// rotate image
 		g2.setTransform(transformer);
 		
+		// calculate fps :)
+		canvas.drawString(String.valueOf(System.currentTimeMillis()-diff), 100, 100);
+		diff = System.currentTimeMillis();
+		
 		g2.drawImage(background, zero.x, zero.y, this);	// draw buffered background
 		g2.drawImage(foreground, zero.x, zero.y, this);	// and foreground
-		
-		// calculate fps :)
-		//g2.drawString(String.valueOf(System.currentTimeMillis()-diff), 20, 20);
-		//diff = System.currentTimeMillis();
 		
 		g2.dispose();
 	}

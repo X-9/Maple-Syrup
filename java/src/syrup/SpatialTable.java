@@ -55,7 +55,7 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 	 */
 	public boolean add(V value) {
 		addInterRadius(value);
-		table.listIterator(table.size()).add(value);
+		table.add(value);
 		return true;
 	}
 	
@@ -68,6 +68,8 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 	public ArrayList<V> nearby(V value) {
 		int x = posX(value);
 		int y = posY(value);
+		if (x < 0 && x > column) return new ArrayList<V>();
+		if (y < 0 && y > row) 	 return new ArrayList<V>();
 		return nearby[x][y];
 	}
 
@@ -92,11 +94,14 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 			for (int j = -1; j < 2; ++j) {
 				int x = posX(value)+i;
 				int y = posY(value)+j;
-				if (x < 0 || y < 0) continue;
-				if (null == nearby[x][y]) {
-					nearby[x][y] = new ArrayList<V>(INIT_NEARBY_SIZE);
+				if (x > 0 && x < column) {
+					if (y > 0 && y < row) {
+						if (null == nearby[x][y]) {
+							nearby[x][y] = new ArrayList<V>(INIT_NEARBY_SIZE);
+						}
+						nearby[x][y].add(value);
+					}
 				}
-				nearby[x][y].add(value);
 			}
 		} // for
 	}

@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -87,12 +88,7 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 				canvas.addRotationAngle(finish-start);	// add relative angle
 				
 				// however new gravity could be found with absolute rotation angle
-				float gx = (float) (.06f*Math.sin(canvas.getAbsoluteAngle()));
-				float gy = (float) (.06f*Math.cos(canvas.getAbsoluteAngle()));
-				
-				// set new gravity forces to liquid
-				liquid.setGravityX(gx);
-				liquid.setGravityY(gy);
+				liquid.turnGravity((float)canvas.getAbsoluteAngle());
 				
 				start = finish;
 			}
@@ -129,8 +125,11 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		canvas.addMouseMotionListener(mouseTool);
 		
 		add(canvas, BorderLayout.CENTER);
-		add(cp, BorderLayout.EAST);
-		add(np, BorderLayout.WEST);
+		
+		JPanel eastPanel = new JPanel(new BorderLayout());
+		eastPanel.add(cp, BorderLayout.CENTER);
+		eastPanel.add(np, BorderLayout.NORTH);
+		add(eastPanel, BorderLayout.EAST);
 		pack();
 		
 		mouseOptions = MouseOptions.EMITTER;
@@ -150,7 +149,8 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		}
 		
 		if (ControlPanel.GRAVITY.equals(e.getName())) {
-			liquid.setGravityY(e.getValue());
+			liquid.setGravity(e.getValue());
+			liquid.turnGravity((float)canvas.getAbsoluteAngle());
 		}
 		
 		if (ControlPanel.STIFFNESS.equals(e.getName())) {

@@ -81,8 +81,8 @@ public class ControlPanel extends JPanel {
 		box.add(makeSlider(RADIUS, 11f, 6f, 12f, 1));
 		box.add(makeSlider(DENSITY, 10f, .01f, 20f, 10));
 		box.add(makeSlider(STIFFNESS, .004f, .001f, .01f, 1000));
-		box.add(makeSlider(SIGMA, .0f, 0f, 2f, 1));
-		box.add(makeSlider(BETA, .3f, .1f, .5f, 100));
+		box.add(makeSlider(SIGMA, .0f, .0f, 1f, 100));
+		box.add(makeSlider(BETA, .3f, .1f, .4f, 100));
 		add(box);
 	}
 	

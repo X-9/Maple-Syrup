@@ -17,7 +17,8 @@ import java.util.Random;
 public class Liquid implements Idle {
 	private static final long serialVersionUID = 1L;
 
-	private Vector2D G = new Vector2D(0, .06f);		// gravity
+	private float G = .06f;							// absolute gravity
+	private Vector2D g = new Vector2D(0, G);		// gravity vector
 	private float h = 10.f;							// interaction radius
 	private float hh = h*h;							// powered radius
 	private float rho0 = 10f;						// rest density
@@ -35,8 +36,7 @@ public class Liquid implements Idle {
 	
 	
 	// Getters and setters
-	public void setGravityX(float gravity) { this.G.x = gravity; }
-	public void setGravityY(float gravity) { this.G.y = gravity; }
+	public void setGravity(float gravity) { this.G = gravity; }
 	public void setRadius(float radius) { this.h = radius; this.hh = h*h;}
 	public void setDensity(float density) {	this.rho0 = density; }
 	public void setStiffness(float stiffness) {	this.k = stiffness; this.k_ = k*10f; }
@@ -53,6 +53,13 @@ public class Liquid implements Idle {
 		
 		attractor = new Vector2D(-1, -1); // mouse out of liquid world
 		emitter = new Vector2D(-1, -1);
+	}
+	
+	public void turnGravity(float radians) {
+		float gx = (float) (G*Math.sin(radians));
+		float gy = (float) (G*Math.cos(radians));
+		
+		g = new Vector2D(gx, gy);
 	}
 	
 	private static float rand() {
@@ -154,7 +161,7 @@ public class Liquid implements Idle {
 			p.p.add(p.v);				// apply force and velocity
 			p.p.add(p.f);
 			
-			p.f = G.clone();		 	// reset force with gravity
+			p.f = g.clone();		 	// reset force with gravity
 			p.v = p.p.minus(p.pp); 		// compute next velocity
 			
 			wallCollision(p);
