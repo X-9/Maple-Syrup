@@ -1,8 +1,8 @@
 package syrup;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -11,9 +11,8 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.image.BufferedImage;
 
-import javax.swing.JComponent;
 
-public class Canvas extends JComponent implements Render {
+public class Picture extends Canvas implements Render {
 	private static final long serialVersionUID = 1L;
 	
 	private final Iterable<Particle> elements;	// collection of elements to draw
@@ -27,7 +26,7 @@ public class Canvas extends JComponent implements Render {
 	private long diff = 0;						// fps
 	
 	
-	public Canvas(final Iterable<Particle> elements) {
+	public Picture(final Iterable<Particle> elements) {
 		if (elements == null) {
 			throw new IllegalArgumentException
 			("Failed to initialize canvas, elements collection is empty.");
@@ -81,6 +80,9 @@ public class Canvas extends JComponent implements Render {
 		
 		// add difference to absolute angle, take mod to avoid overflow
 		theta = (theta+d)%(2*Math.PI);
+		
+		// next cycle rotates canvas
+		getGraphics().clearRect(0, 0, getWidth(), getHeight());
 	}
 	
 	public Point projection(Point p) {
@@ -111,10 +113,6 @@ public class Canvas extends JComponent implements Render {
 		return new Dimension(400, 400);
 	}
 	
-	@Override protected void paintComponent(Graphics g) {
-		System.err.println("WHAT?!");
-	}
-	
 	@Override
 	/**
 	 * Use active rendering, because Java repaints component in separate thread.
@@ -122,7 +120,7 @@ public class Canvas extends JComponent implements Render {
 	public void display() {
 		// clear screen, filling it with default background colour
 		canvas.setBackground(new Color(0, 0, 0, 0));
-		canvas.clearRect(0, 0, getWidth(), getHeight());
+		canvas.clearRect(0, 0, (int)lsize.getWidth(), (int)lsize.getHeight());
 		
 		final float c = Particle.r/2;	// find centre of particle
 		final float s = Particle.r;		// particle size
@@ -130,15 +128,13 @@ public class Canvas extends JComponent implements Render {
 		// draw all particles on the canvas
 		for (Particle p : elements) {
 			Ellipse2D e = new Ellipse2D.Float(p.p.x-c, p.p.y-c, s, s);
-			int green = 255-(int)p.rho*15;
+			int green = 255-(int)(p.rho*15)%255;
 			green = (green < 0) ? 0 : green;
 			canvas.setColor(new Color(0, green, 255));
 			canvas.fill(e);
 		}
 		
 		Graphics2D g2 = (Graphics2D)getGraphics();
-		
-		g2.clearRect(0, 0, getWidth(), getHeight());
 		
 		// rotate image
 		g2.setTransform(transformer);

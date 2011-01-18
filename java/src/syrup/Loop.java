@@ -9,7 +9,8 @@ abstract interface Render {
 }
 
 public class Loop implements Runnable {
-	static private final int DELAY = 10;
+	static private final int UPDATE_RATE = 50;
+	static private final int UPDATE_PERIOD = 1000/UPDATE_RATE;
 	
 	private final Idle idle;
 	private final Render render;
@@ -26,19 +27,16 @@ public class Loop implements Runnable {
 	
 	@Override
 	public void run() {
+		
+		long tick = System.currentTimeMillis();
+		long sleep = 0;
+		
 		for (;;) {
-			long current = System.currentTimeMillis();
 			idle.move();
 			render.display();
-			long diff = DELAY - (System.currentTimeMillis()-current);
-			diff = (diff < 2) ? 2 : diff;
-			try {
-				Thread.sleep(diff);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			tick += UPDATE_PERIOD;
+			sleep = tick - System.currentTimeMillis();
+			if (sleep >= 0)	try { Thread.sleep(sleep); } catch (InterruptedException e) { }
 		}
-		
 	}
 }

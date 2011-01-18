@@ -29,7 +29,7 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	};
 	
 	private final static Liquid liquid = new Liquid(particles);	// Main engine
-	private final static Canvas canvas = new Canvas(particles);	// Draws elements on the screen
+	private final static Picture canvas = new Picture(particles);	// Draws elements on the screen
 	private final static Loop loop = new Loop(liquid, canvas);	// What could it be?
 	
 	private MouseOptions mouseOptions;							// Set of available mouse options
