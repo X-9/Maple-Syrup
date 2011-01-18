@@ -26,7 +26,7 @@ public class InstrumentPanel extends JPanel {
 		JToggleButton rotator = makeButton(ROTATOR, "img/rotate.png", "img/rotate_pressed.png");
 		JToggleButton emitter = makeButton(EMITTER, "img/liquid.png", "img/liquid_pressed.png");
 		emitter.setSelected(true);
-
+		
 		group.add(emitter);
 		group.add(rotator);
 		group.add(magnet);

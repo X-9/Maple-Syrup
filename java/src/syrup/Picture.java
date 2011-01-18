@@ -40,7 +40,7 @@ public class Picture extends Canvas implements Render {
 		// obviously two layouts
 		background = new BufferedImage(lsize.width, lsize.height, BufferedImage.TYPE_INT_RGB);
 		foreground = new BufferedImage(lsize.width, lsize.height, BufferedImage.TYPE_INT_ARGB);
-		
+
 		canvas = (Graphics2D)foreground.getGraphics();	// make paint work on foreground
 		
 		transformer = canvas.getTransform();			// transformation object
@@ -80,9 +80,6 @@ public class Picture extends Canvas implements Render {
 		
 		// add difference to absolute angle, take mod to avoid overflow
 		theta = (theta+d)%(2*Math.PI);
-		
-		// next cycle rotates canvas
-		getGraphics().clearRect(0, 0, getWidth(), getHeight());
 	}
 	
 	public Point projection(Point p) {
@@ -135,6 +132,8 @@ public class Picture extends Canvas implements Render {
 		}
 		
 		Graphics2D g2 = (Graphics2D)getGraphics();
+
+		g2.clearRect(0, 0, getWidth(), getHeight());
 		
 		// rotate image
 		g2.setTransform(transformer);

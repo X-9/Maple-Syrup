@@ -109,7 +109,7 @@ public class Liquid implements Idle {
 		Dimension size = getSize();
 		
 		// opposite force coefficient [0, n), bigger number gives less strong force 
-		float k = 2;
+		float k = 1;
 
 		if (p.p.x > size.width-hpadding) {
 			p.f.substract(new Vector2D((p.p.x-(size.width-hpadding))/k, 0));

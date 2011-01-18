@@ -36,10 +36,10 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 	abstract protected int posX(V value);
 	abstract protected int posY(V value);
 	
-	public SpatialTable(int row, int column) {
+	public SpatialTable(int column, int row) {
 		this.row = row; this.column = column;
 		table = new ArrayList<V>((row*column)/3); // assumes object takes only 1/3 of space
-		nearby = new ArrayList[row][column];	  // ftw? java doesn't allow to create generic arrays or does it?
+		nearby = new ArrayList[column][row];	  // ftw? java doesn't allow to create generic arrays or does it?
 	}
 	
 	@Override
@@ -68,8 +68,7 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 	public ArrayList<V> nearby(V value) {
 		int x = posX(value);
 		int y = posY(value);
-		if (x < 0 && x > column) return new ArrayList<V>();
-		if (y < 0 && y > row) 	 return new ArrayList<V>();
+		if (!inRange(x, y)) return new ArrayList<V>(); 
 		return nearby[x][y];
 	}
 
@@ -78,7 +77,7 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 	 * needed if elements change their position in the space.
 	 */
 	public void rehash() {
-		nearby = new ArrayList[row][column];	// ftw again?
+		nearby = new ArrayList[column][row];	// ftw again?
 		for (V v : this) {
 			addInterRadius(v);
 		}
@@ -94,16 +93,18 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 			for (int j = -1; j < 2; ++j) {
 				int x = posX(value)+i;
 				int y = posY(value)+j;
-				if (x > 0 && x < column) {
-					if (y > 0 && y < row) {
-						if (null == nearby[x][y]) {
-							nearby[x][y] = new ArrayList<V>(INIT_NEARBY_SIZE);
-						}
-						nearby[x][y].add(value);
+				if (inRange(x, y)) {
+					if (null == nearby[x][y]) {
+						nearby[x][y] = new ArrayList<V>(INIT_NEARBY_SIZE);
 					}
+					nearby[x][y].add(value);
 				}
 			}
 		} // for
+	}
+	
+	private boolean inRange(float x, float y) {
+		return (x > 0 && x < column && y > 0 && y < row);
 	}
 
 }

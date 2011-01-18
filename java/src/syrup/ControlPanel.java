@@ -1,10 +1,10 @@
 package syrup;
 
+import java.awt.GridLayout;
 import java.util.EventListener;
 import java.util.EventObject;
 import java.util.Hashtable;
 
-import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -76,14 +76,13 @@ public class ControlPanel extends JPanel {
 	}
 
 	private void initGui() {
-		Box box = Box.createVerticalBox();
-		box.add(makeSlider(GRAVITY, .06f, .01f, .1f, 100));
-		box.add(makeSlider(RADIUS, 11f, 6f, 12f, 1));
-		box.add(makeSlider(DENSITY, 10f, .01f, 20f, 10));
-		box.add(makeSlider(STIFFNESS, .004f, .001f, .01f, 1000));
-		box.add(makeSlider(SIGMA, .0f, .0f, 1f, 100));
-		box.add(makeSlider(BETA, .3f, .1f, .4f, 100));
-		add(box);
+		setLayout(new GridLayout(0, 1));
+		add(makeSlider(GRAVITY, .06f, .01f, .1f, 100));
+		add(makeSlider(RADIUS, 11f, 6f, 12f, 1));
+		add(makeSlider(DENSITY, 10f, .01f, 20f, 10));
+		add(makeSlider(STIFFNESS, .004f, .001f, .01f, 1000));
+		add(makeSlider(SIGMA, .0f, .0f, 1f, 100));
+		add(makeSlider(BETA, .3f, .1f, .4f, 100));
 	}
 	
 	

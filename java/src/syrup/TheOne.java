@@ -7,8 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.Box;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -28,11 +28,11 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		}
 	};
 	
-	private final static Liquid liquid = new Liquid(particles);	// Main engine
+	private final static Liquid liquid = new Liquid(particles);		// Main engine
 	private final static Picture canvas = new Picture(particles);	// Draws elements on the screen
-	private final static Loop loop = new Loop(liquid, canvas);	// What could it be?
+	private final static Loop loop = new Loop(liquid, canvas);		// What could it be?
 	
-	private MouseOptions mouseOptions;							// Set of available mouse options
+	private MouseOptions mouseOptions;								// Set of available mouse options
 	
 	private enum MouseOptions {
 		EMITTER() {
@@ -126,10 +126,10 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		
 		add(canvas, BorderLayout.CENTER);
 		
-		JPanel eastPanel = new JPanel(new BorderLayout());
-		eastPanel.add(cp, BorderLayout.CENTER);
-		eastPanel.add(np, BorderLayout.NORTH);
-		add(eastPanel, BorderLayout.EAST);
+		Box box = Box.createVerticalBox();
+		box.add(np);
+		box.add(cp);
+		add(box, BorderLayout.EAST);
 		pack();
 		
 		mouseOptions = MouseOptions.EMITTER;
