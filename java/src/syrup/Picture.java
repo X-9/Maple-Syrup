@@ -125,9 +125,9 @@ public class Picture extends Canvas implements Render {
 		// draw all particles on the canvas
 		for (Particle p : elements) {
 			Ellipse2D e = new Ellipse2D.Float(p.p.x-c, p.p.y-c, s, s);
-			int green = 255-(int)(p.rho*15)%255;
-			green = (green < 0) ? 0 : green;
-			canvas.setColor(new Color(0, green, 255));
+			int green = (int)(p.rho*10);
+			green = (green > 255) ? 255 : green;
+			canvas.setColor(new Color(0, 255-green, 255));
 			canvas.fill(e);
 		}
 		

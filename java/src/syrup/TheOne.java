@@ -132,6 +132,8 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		add(box, BorderLayout.EAST);
 		pack();
 		
+		setResizable(false);
+		
 		mouseOptions = MouseOptions.EMITTER;
 		
 		// Start The Ignition
