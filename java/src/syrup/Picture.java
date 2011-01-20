@@ -133,14 +133,14 @@ public class Picture extends Canvas implements Render {
 		
 		Graphics2D g2 = (Graphics2D)getGraphics();
 
-		g2.clearRect(0, 0, getWidth(), getHeight());
-		
 		// rotate image
 		g2.setTransform(transformer);
 		
 		// calculate fps :)
 		canvas.drawString(String.valueOf(System.currentTimeMillis()-diff), 100, 100);
 		diff = System.currentTimeMillis();
+		
+		g2.clearRect(0, 0, getWidth(), getHeight());
 		
 		g2.drawImage(background, zero.x, zero.y, this);	// draw buffered background
 		g2.drawImage(foreground, zero.x, zero.y, this);	// and foreground

@@ -3,8 +3,8 @@ package syrup;
 import java.awt.GridLayout;
 import java.util.EventListener;
 import java.util.EventObject;
-import java.util.Hashtable;
-
+import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -58,31 +58,15 @@ public class ControlPanel extends JPanel {
 		initGui();
 	}
 	
-	private JSlider makeSlider(final String name, float init, float min, float max, final float scale) {
-		JSlider slider = new JSlider(JSlider.HORIZONTAL, (int)(min*scale), (int)(max*scale), (int)(init*scale));
-		slider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				float value = ((JSlider)e.getSource()).getValue()/scale;
-				fireEvent(new ControlsEvent(this, name, (float)value));	
-			}
-		});
-		Hashtable<Integer, JLabel> labels = new Hashtable<Integer, JLabel>();
-		labels.put(new Integer((int)((max*scale+min*scale)/2)), new JLabel(name));
-		slider.setLabelTable(labels);
-		slider.setPaintLabels(true);
-		
-		return slider;
-	}
-
 	private void initGui() {
-		setLayout(new GridLayout(0, 1));
-		add(makeSlider(GRAVITY, .06f, .01f, .1f, 100));
-		add(makeSlider(RADIUS, 11f, 6f, 12f, 1));
-		add(makeSlider(DENSITY, 10f, .01f, 20f, 10));
-		add(makeSlider(STIFFNESS, .004f, .001f, .01f, 1000));
-		add(makeSlider(SIGMA, .0f, .0f, 1f, 100));
-		add(makeSlider(BETA, .3f, .1f, .4f, 100));
+		Box box = Box.createVerticalBox();
+		box.add(new FloatSlider(GRAVITY, .06f, .01f, .1f));
+		box.add(new FloatSlider(RADIUS, 10f, 6f, 12f));
+		box.add(new FloatSlider(DENSITY, 10f, .01f, 20f));
+		box.add(new FloatSlider(STIFFNESS, .004f, .001f, .01f));
+		box.add(new FloatSlider(SIGMA, .0f, .0f, 1f));
+		box.add(new FloatSlider(BETA, .3f, .1f, .4f));
+		add(box);
 	}
 	
 	
@@ -98,5 +82,30 @@ public class ControlPanel extends JPanel {
 		for (ControlsListener listener : listenerList.getListeners(ControlsListener.class)) {
 			listener.controlsPerformed(e);
 		}
+	}
+	
+	private class FloatSlider extends JComponent {
+		private static final long serialVersionUID = 1L;
+
+		public FloatSlider(final String name, final float value, final float min, final float max) {
+			if (min >= max || value < min || value > max) {
+				throw new IllegalArgumentException("invalid range properties");
+			}
+			final float tick = (max-min)/100;
+			JSlider slider = new JSlider(0, 100);
+			slider.setValue((int)(value/tick));
+			slider.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					float value = ((JSlider)e.getSource()).getValue()*tick+min;
+					fireEvent(new ControlsEvent(this, name, value));
+				}
+			});
+			
+			setLayout(new GridLayout(3, 1));
+			add(new JLabel(name));
+			add(slider);
+			add(Box.createVerticalGlue());
+		}		
 	}
 }
