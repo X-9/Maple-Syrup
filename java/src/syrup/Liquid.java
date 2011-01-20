@@ -186,9 +186,9 @@ public class Liquid implements Idle {
 				float q = rij.lengthSquared();
 				
 				if (q < hh && q != 0 ) {
-					q = (float)Math.sqrt(q);	// q is length
-					rij = rij.devide(q);		// now rij is normalized
-					q /= h;						// find q
+					q = (float)Math.sqrt(q);				// q is length
+					rij.devideIt(q);						// now rij is normalized
+					q /= h;									// find q
 
 					float qq = (1-q)*(1-q);
 					pi.rho += qq;
@@ -199,9 +199,9 @@ public class Liquid implements Idle {
 
 					if (u > 0) {
 						float s = (1-q)*(sigma*u+beta*u*u);
-						Vector2D I = rij.scale(s*.5f);
-						pi.v.substract(I);
-						pj.v.add(I);
+						rij.scaleIt(s*.5f);
+						pi.v.substract(rij);
+						pj.v.add(rij);
 					}
 				}
 			} // for
@@ -209,12 +209,14 @@ public class Liquid implements Idle {
 	}
 	
 	private void density() {
+		Vector2D dx = new Vector2D(0, 0);
+		
 		for (Particle pi : particles) {
 			
 			float P  = k*(pi.rho - rho0);
 			float P_ = k_*pi.rho_;
 			
-			Vector2D dx = new Vector2D(0, 0);
+			dx.reset();
 			
 			for (Particle pj : particles.nearby(pi)) {
 				Vector2D rij = pj.p.minus(pi.p);
@@ -222,12 +224,12 @@ public class Liquid implements Idle {
 				if (q < hh && q != 0) {
 					// try to minimise amount of operations.
 					q = (float)Math.sqrt(q);
-					rij = rij.devide(q);
+					rij.devideIt(q);
 					q /= h;
 					float a = P*(1-q)+P_*(1-q)*(1-q);
-					Vector2D uij = rij.scale(a*.5f);
-					pj.f.add(uij);
-					dx.substract(uij);
+					rij.scaleIt(a*.5f);	// u_{ij}
+					pj.f.add(rij);
+					dx.substract(rij);
 				}
 			} // for
 			pi.f.add(dx);

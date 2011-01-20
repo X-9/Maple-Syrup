@@ -13,6 +13,10 @@ public class Vector2D {
 		return new Vector2D(x, y);
 	}
 	
+	public void reset() {
+		x = 0; y = 0;
+	}
+	
 	public String toString() {
 		return "{x: " + x + ", y: " + y + "}";
 	}
@@ -44,12 +48,23 @@ public class Vector2D {
 		return new Vector2D(x*s, y*s);
 	}
 	
+	public void scaleIt(float s) {
+		x *= s; y *= s;
+	}
+	
 	/**Returns new, divided vector */
 	public Vector2D devide(float d) {
 		if (d == 0) {
 			throw new IllegalArgumentException();
 		}
 		return new Vector2D(x/d, y/d);
+	}
+	
+	public void devideIt(float d) {
+		if (d == 0) {
+			throw new IllegalArgumentException();
+		}
+		x /= d; y/= d;
 	}
 	
 	/** Returns new dot product of two vectors. */
