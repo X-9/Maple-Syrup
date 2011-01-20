@@ -47,7 +47,6 @@ public class ControlPanel extends JPanel {
 	public static final String STIFFNESS_NEAR 	= "Stiffness Near";
 	public static final String SIGMA 			= "Sigma";
 	public static final String BETA 			= "Beta";
-	public static final String ROTATION			= "Rotation";
 	
 	protected final EventListenerList listenerList;
 	
@@ -68,7 +67,6 @@ public class ControlPanel extends JPanel {
 		box.add(new FloatSlider(BETA, .3f, .1f, .4f));
 		add(box);
 	}
-	
 	
 	public void addControlsListener(ControlsListener listener) {
 		listenerList.add(ControlsListener.class, listener);

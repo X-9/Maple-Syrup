@@ -43,7 +43,7 @@ public class InstrumentPanel extends JPanel {
 		button.setPressedIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource(pressedImg))));
 		button.setSelectedIcon(new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource(pressedImg))));
 		button.setActionCommand(actionCommand);
-		button.setBorder(null);
+		button.setFocusable(false);
 		button.setContentAreaFilled(false);
 		return button;
 	}
