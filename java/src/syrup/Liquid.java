@@ -60,7 +60,7 @@ public class Liquid implements Idle {
 		float gx = (float) (G*Math.sin(radians));
 		float gy = (float) (G*Math.cos(radians));
 		
-		g = new Vector2D(gx, gy);
+		g.move(gx, gy);
 	}
 	
 	private static float rand() {
@@ -72,11 +72,11 @@ public class Liquid implements Idle {
 	}
 	
 	public void beginEmit(float x, float y) {
-		emitter = new Vector2D(x, y);
+		emitter.move(x, y);
 	}
 	
 	public void endEmit() {
-		emitter = new Vector2D(-1, -1);
+		emitter.move(-1, -1);
 	}
 	
 	private void populate() {
@@ -94,7 +94,8 @@ public class Liquid implements Idle {
 			p.p = new Vector2D(emitter.x+rand()*10, emitter.y+rand()*10);
 			p.pp = p.p.clone();
 			p.f = new Vector2D(0, 0);
-			p.v = p.p.minus(p.pp);
+			p.v = new Vector2D(0, 0);
+			p.v.minus(p.p, p.pp);
 			particles.add(p);
 		}
 	}
@@ -113,19 +114,19 @@ public class Liquid implements Idle {
 		float k = 2;
 
 		if (p.p.x > size.width-hpadding) {
-			p.f.substract(new Vector2D((p.p.x-(size.width-hpadding))/k, 0));
+			p.f.substract((p.p.x-(size.width-hpadding))/k, 0);
 		}
 		
 		if (p.p.x < hpadding) {
-			p.f.add(new Vector2D((hpadding-p.p.x)/k, 0));
+			p.f.add((hpadding-p.p.x)/k, 0);
 		}
 		
 		if (p.p.y > size.height-vpadding) {
-			p.f.substract(new Vector2D(0, (p.p.y-(size.height-vpadding))/k));
+			p.f.substract(0, (p.p.y-(size.height-vpadding))/k);
 		}
 		
 		if (p.p.y < vpadding) {
-			p.f.add(new Vector2D(0, (vpadding-p.p.y)/k));
+			p.f.add(0, (vpadding-p.p.y)/k);
 		}
 	}
 
@@ -144,8 +145,11 @@ public class Liquid implements Idle {
 		if (attractor.x < hpadding || attractor.x > size.width-hpadding)  return;
 		if (attractor.y < hpadding || attractor.y > size.height-hpadding) return;
 		
-		if (attractor.minus(p.p).lengthSquared() < rsqrd) {
-			p.f.add(attractor.minus(p.p).scale(k));	
+		float dx = attractor.x-p.p.x;
+		float dy = attractor.y-p.p.y;
+		float sqlen = (dx*dx)+(dy*dy);
+		if (sqlen < rsqrd) {
+			p.f.add(dx*k, dy*k);	
 		}
 	}
 	
@@ -158,12 +162,13 @@ public class Liquid implements Idle {
 		viscosity();
 		
 		for (Particle p : particles) {
-			p.pp = p.p.clone();			// save previous position
+			p.pp.copy(p.p);				// save previous position
 			p.p.add(p.v);				// apply force and velocity
 			p.p.add(p.f);
 			
-			p.f = g.clone();		 	// reset force with gravity
-			p.v = p.p.minus(p.pp); 		// compute next velocity
+			p.f.copy(g);			 	// reset force with gravity
+			
+			p.v.minus(p.p, p.pp);		// compute next velocity
 			
 			wallCollision(p);
 			
@@ -177,29 +182,32 @@ public class Liquid implements Idle {
 	}
 	
 	private void viscosity() {
+		Vector2D rij = new Vector2D();
+		Vector2D vij = new Vector2D();
+		
 		for (Particle pi : particles) {
 			pi.rho = 0;
 			pi.rho_ = 0;
 			
 			for (Particle pj : particles.nearby(pi)) {
-				Vector2D rij = pj.p.minus(pi.p);
+				rij.minus(pj.p, pi.p);
 				float q = rij.lengthSquared();
 				
 				if (q < hh && q != 0 ) {
 					q = (float)Math.sqrt(q);				// q is length
-					rij.devideIt(q);						// now rij is normalized
+					rij.devide(q);							// now rij is normalized
 					q /= h;									// find q
 
 					float qq = (1-q)*(1-q);
 					pi.rho += qq;
 					pi.rho_+= qq*(1-q);
 					
-					Vector2D vij = pi.v.minus(pj.v);
+					vij.minus(pi.v, pj.v);
 					float u = vij.dot(rij);
 
 					if (u > 0) {
 						float s = (1-q)*(sigma*u+beta*u*u);
-						rij.scaleIt(s*.5f);
+						rij.scale(s*.5f);	// I
 						pi.v.substract(rij);
 						pj.v.add(rij);
 					}
@@ -209,7 +217,8 @@ public class Liquid implements Idle {
 	}
 	
 	private void density() {
-		Vector2D dx = new Vector2D(0, 0);
+		Vector2D rij = new Vector2D();
+		Vector2D dx = new Vector2D();
 		
 		for (Particle pi : particles) {
 			
@@ -219,15 +228,15 @@ public class Liquid implements Idle {
 			dx.reset();
 			
 			for (Particle pj : particles.nearby(pi)) {
-				Vector2D rij = pj.p.minus(pi.p);
+				rij.minus(pj.p, pi.p);
 				float q = rij.lengthSquared();
 				if (q < hh && q != 0) {
 					// try to minimise amount of operations.
 					q = (float)Math.sqrt(q);
-					rij.devideIt(q);
+					rij.devide(q);
 					q /= h;
 					float a = P*(1-q)+P_*(1-q)*(1-q);
-					rij.scaleIt(a*.5f);	// u_{ij}
+					rij.scale(a*.5f);	// u_{ij}
 					pj.f.add(rij);
 					dx.substract(rij);
 				}

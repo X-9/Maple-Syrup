@@ -3,6 +3,10 @@ package syrup;
 public class Vector2D {
 	public float x;
 	public float y;
+
+	public Vector2D() {
+		x = 0; y = 0;
+	}
 	
 	public Vector2D(float x, float y) {
 		this.x = x;
@@ -15,6 +19,14 @@ public class Vector2D {
 	
 	public void reset() {
 		x = 0; y = 0;
+	}
+	
+	public void copy(Vector2D v) {
+		x = v.x; y = v.y;
+	}
+	
+	public void move(float x, float y) {
+		this.x = x; this.y = y;
 	}
 	
 	public String toString() {
@@ -36,31 +48,11 @@ public class Vector2D {
 		y /= l;
 	}
 	
-	/** Returns new, normalized vector */
-	public Vector2D getNormalized() {
-		Vector2D v = clone();
-		v.normalize();
-		return v;
-	}
-	
-	/** Returns new, scaled vector. */
-	public Vector2D scale(float s) {
-		return new Vector2D(x*s, y*s);
-	}
-	
-	public void scaleIt(float s) {
+	public void scale(float s) {
 		x *= s; y *= s;
 	}
 	
-	/**Returns new, divided vector */
-	public Vector2D devide(float d) {
-		if (d == 0) {
-			throw new IllegalArgumentException();
-		}
-		return new Vector2D(x/d, y/d);
-	}
-	
-	public void devideIt(float d) {
+	public void devide(float d) {
 		if (d == 0) {
 			throw new IllegalArgumentException();
 		}
@@ -72,24 +64,30 @@ public class Vector2D {
 		return x*v.x+y*v.y;
 	}
 	
+	public void add(float x, float y) {
+		this.x += x; this.y += y;
+	}
+	
 	// Do not return this to avoid cross-reference
 	public void add(Vector2D v) {
-		x += v.x;
-		y += v.y;
+		add(v.x, v.y);
+	}
+	
+	public void substract(float x, float y) {
+		this.x -= x; this.y -= y;
 	}
 	
 	public void substract(Vector2D v) {
-		x -= v.x;
-		y -= v.y;
+		substract(v.x, v.y);
 	}
 	
-	/** Returns new vector and doesn't affect this vector. */
-	public Vector2D plus(Vector2D v) {
-		return new Vector2D(x+v.x, y+v.y);
+	public void plus(Vector2D v1, Vector2D v2) {
+		x = v1.x+v2.x;
+		y = v1.y+v2.y;
 	}
 	
-	/** Returns new vector and doesn't affect this vector. */
-	public Vector2D minus(Vector2D v) {
-		return new Vector2D(x-v.x, y-v.y);
+	public void minus(Vector2D v1, Vector2D v2) {
+		x = v1.x-v2.x;
+		y = v1.y-v2.y;
 	}
 }
