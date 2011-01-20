@@ -14,6 +14,7 @@ import java.util.Random;
  *     Viscoelastic Fluid Simulation', 2005.
  * 
  */
+
 public class Liquid implements Idle {
 	private static final long serialVersionUID = 1L;
 
@@ -26,7 +27,7 @@ public class Liquid implements Idle {
 	private float k_ = k*10f;						// yet another parameter
 	private float sigma = 0f;						// sigma
 	private float beta = .3f;						// beta
-	private int n = 0;								// number of particles
+	private int n = 1500;							// number of particles
 	private int hpadding = 20;						// keep particles away from border
 	private int vpadding = 20;
 	
@@ -79,7 +80,7 @@ public class Liquid implements Idle {
 	}
 	
 	private void populate() {
-		if (n > 1500) return;
+		if (n < 0) return;
 		
 		Dimension size = getSize();
 		
@@ -88,7 +89,7 @@ public class Liquid implements Idle {
 		if (emitter.y < vpadding || emitter.y > size.height-vpadding) return;
 		
 		// generate 10 paticles
-		for (int i = 0; i < 10; ++i, ++n) {
+		for (int i = 0; i < 10; ++i, --n) {
 			Particle p = new Particle();
 			p.p = new Vector2D(emitter.x+rand()*10, emitter.y+rand()*10);
 			p.pp = p.p.clone();
@@ -184,8 +185,8 @@ public class Liquid implements Idle {
 				Vector2D rij = pj.p.minus(pi.p);
 				float q = rij.lengthSquared();
 				
-				if (q < hh && q != 0 ) {					
-					q = (float)Math.sqrt(q);	// q is length	
+				if (q < hh && q != 0 ) {
+					q = (float)Math.sqrt(q);	// q is length
 					rij = rij.devide(q);		// now rij is normalized
 					q /= h;						// find q
 
@@ -216,15 +217,15 @@ public class Liquid implements Idle {
 			Vector2D dx = new Vector2D(0, 0);
 			
 			for (Particle pj : particles.nearby(pi)) {
-				
 				Vector2D rij = pj.p.minus(pi.p);
 				float q = rij.lengthSquared();
 				if (q < hh && q != 0) {
+					// try to minimise amount of operations.
 					q = (float)Math.sqrt(q);
 					rij = rij.devide(q);
 					q /= h;
 					float a = P*(1-q)+P_*(1-q)*(1-q);
-					Vector2D uij = rij.scale(a).scale(0.5f);
+					Vector2D uij = rij.scale(a*.5f);
 					pj.f.add(uij);
 					dx.substract(uij);
 				}

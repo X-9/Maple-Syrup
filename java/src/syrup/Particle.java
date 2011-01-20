@@ -24,4 +24,5 @@ public class Particle {
 	
 	/** Accumulated particle force */
 	public Vector2D f;
+	
 }
