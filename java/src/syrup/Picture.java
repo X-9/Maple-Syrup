@@ -18,6 +18,7 @@ public class Picture extends Canvas implements Render {
 	private final Iterable<Particle> elements;	// collection of elements to draw
 	private final BufferedImage background;
 	private final BufferedImage foreground;
+	private final BufferedImage[] options;		// set of available particles 
 	private final Graphics2D canvas;			// draw elements on this canvas
 	private final AffineTransform transformer;	// use it to rotate layouts
 	private final Point zero;					//
@@ -40,6 +41,10 @@ public class Picture extends Canvas implements Render {
 		// obviously two layouts
 		background = new BufferedImage(lsize.width, lsize.height, BufferedImage.TYPE_INT_RGB);
 		foreground = new BufferedImage(lsize.width, lsize.height, BufferedImage.TYPE_INT_ARGB);
+		
+		// variety of colours
+		options = new BufferedImage[256];
+		genParticleTable();
 
 		canvas = (Graphics2D)foreground.getGraphics();	// make paint work on foreground
 		
@@ -105,6 +110,21 @@ public class Picture extends Canvas implements Render {
 		return theta;
 	}
 	
+	/**
+	 * Generate set of available particles with different colours.
+	 */
+	private void genParticleTable() {
+		for (int i = 0; i < 256; ++i) {
+			BufferedImage img = new BufferedImage((int)Particle.r, (int)Particle.r, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g2 = (Graphics2D)img.getGraphics();
+			Ellipse2D e = new Ellipse2D.Float(0, 0, Particle.r, Particle.r);
+			g2.setColor(new Color(0, i, 255));
+			g2.fill(e);
+			g2.dispose();
+			options[i] = img;
+		}
+	}
+	
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(400, 400);
@@ -120,15 +140,13 @@ public class Picture extends Canvas implements Render {
 		canvas.clearRect(0, 0, (int)lsize.getWidth(), (int)lsize.getHeight());
 		
 		final float c = Particle.r/2;	// find centre of particle
-		final float s = Particle.r;		// particle size
 		
 		// draw all particles on the canvas
 		for (Particle p : elements) {
-			Ellipse2D e = new Ellipse2D.Float(p.p.x-c, p.p.y-c, s, s);
-			int green = (int)(p.rho*10);
-			green = (green > 255) ? 255 : green;
-			canvas.setColor(new Color(0, 255-green, 255));
-			canvas.fill(e);
+			int green = 255-(int)(p.rho*10);
+			green = (green < 0) ? 0 : green;
+			// use cached particles
+			canvas.drawImage(options[green], (int)(p.p.x-c), (int)(p.p.y-c), this);
 		}
 		
 		Graphics2D g2 = (Graphics2D)getGraphics();
@@ -137,6 +155,7 @@ public class Picture extends Canvas implements Render {
 		g2.setTransform(transformer);
 		
 		// calculate fps :)
+		canvas.setColor(Color.BLACK);
 		canvas.drawString(String.valueOf(System.currentTimeMillis()-diff), 100, 100);
 		diff = System.currentTimeMillis();
 		
