@@ -3,7 +3,6 @@ package syrup;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -28,6 +27,8 @@ public class Picture extends Canvas implements Render {
 	private final Point zero;					//
 	private Dimension lsize;					// layouts size
 	private double theta;						// absolute rotation angle in radians
+	
+	private Point fps;
 	private long diff = 0;						// fps
 	
 	
@@ -62,6 +63,16 @@ public class Picture extends Canvas implements Render {
 		
 		// repaint canvas manually only
 		setIgnoreRepaint(true);
+		
+		fps = new Point(-10, -10);	// hide fps number
+	}
+	
+	public void showFps(boolean show) {
+		if (show) {
+			fps = new Point(20, 20);
+		} else {
+			fps = new Point(-10, -10);
+		}
 	}
 	
 	private void initBackground() {
@@ -170,7 +181,7 @@ public class Picture extends Canvas implements Render {
 		
 		// calculate fps :)
 		canvas.setColor(Color.BLACK);
-		canvas.drawString(String.valueOf(System.currentTimeMillis()-diff), 100, 100);
+		canvas.drawString(String.valueOf(System.currentTimeMillis()-diff), fps.x, fps.y);
 		diff = System.currentTimeMillis();
 		
 		g2.clearRect(0, 0, getWidth(), getHeight());

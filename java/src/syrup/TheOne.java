@@ -215,6 +215,11 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 	
 	public static void main(String[] args) {
 		TheOne one = new TheOne();
+		
+		if (args.length > 0 && args[0].equals("--show-fps")) {
+			canvas.showFps(true);
+		}
+		
 		one.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		one.setVisible(true);
