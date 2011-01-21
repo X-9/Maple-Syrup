@@ -152,8 +152,8 @@ public class Liquid implements Idle {
 			p.f.add(dx*k, dy*k);	
 		}
 	}
-	
-	@Override
+
+	//@Override
 	public void move() {
 		// add new particles
 		populate();

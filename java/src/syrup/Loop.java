@@ -25,7 +25,7 @@ public class Loop implements Runnable {
 		thread.start();
 	}
 	
-	@Override
+	//@Override
 	public void run() {
 		
 		long tick = System.currentTimeMillis();

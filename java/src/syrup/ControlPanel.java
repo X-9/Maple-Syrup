@@ -93,7 +93,7 @@ public class ControlPanel extends JPanel {
 			JSlider slider = new JSlider(0, 100);
 			slider.setValue((int)(value/tick));
 			slider.addChangeListener(new ChangeListener() {
-				@Override
+				// @Override
 				public void stateChanged(ChangeEvent e) {
 					float value = ((JSlider)e.getSource()).getValue()*tick+min;
 					fireEvent(new ControlsEvent(this, name, value));

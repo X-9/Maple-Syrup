@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 import javax.swing.Box;
 import javax.swing.JFrame;
@@ -139,8 +140,8 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		// Start The Ignition
 		loop.start();
 	}
-	
-	@Override
+
+	//@Override
 	public void controlsPerformed(ControlsEvent e) {
 		if (ControlPanel.RADIUS.equals(e.getName())) {
 			liquid.setRadius(e.getValue());
@@ -169,7 +170,7 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		
 	}
 	
-	@Override
+	//@Override
 	public void actionPerformed(ActionEvent e) {
 		if (InstrumentPanel.MAGNET.equals(e.getActionCommand())) {
 			mouseOptions = MouseOptions.MAGNET;
@@ -184,24 +185,29 @@ public class TheOne extends JFrame implements ControlsListener, ActionListener {
 		}
 	}
 	
-	private class MouseTool extends MouseAdapter {
+	private class MouseTool extends MouseAdapter implements MouseMotionListener {
 
-		@Override
+		//@Override
 		public void mouseDragged(MouseEvent e) {
-			super.mouseDragged(e);
+			super.mousePressed(e);
 			mouseOptions.dragged(e);
 		}
 
-		@Override
+		//@Override
 		public void mousePressed(MouseEvent e) {
 			super.mousePressed(e);
 			mouseOptions.pressed(e);
 		}
 
-		@Override
+		//@Override
 		public void mouseReleased(MouseEvent e) {
 			super.mouseReleased(e);
 			mouseOptions.released(e);
+		}
+
+		//@Override
+		public void mouseMoved(MouseEvent arg0) {
+			
 		}
 		
 	}

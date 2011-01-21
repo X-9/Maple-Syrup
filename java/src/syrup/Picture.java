@@ -3,12 +3,15 @@ package syrup;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
 
@@ -21,6 +24,7 @@ public class Picture extends Canvas implements Render {
 	private final BufferedImage[] options;		// set of available particles 
 	private final Graphics2D canvas;			// draw elements on this canvas
 	private final AffineTransform transformer;	// use it to rotate layouts
+	private BufferStrategy buffer;				
 	private final Point zero;					//
 	private Dimension lsize;					// layouts size
 	private double theta;						// absolute rotation angle in radians
@@ -51,6 +55,8 @@ public class Picture extends Canvas implements Render {
 		transformer = canvas.getTransform();			// transformation object
 		theta = 0;										// initial rotation angle
 		
+		setSize(400, 400);
+		
 		// draw background
 		initBackground();
 		
@@ -60,7 +66,7 @@ public class Picture extends Canvas implements Render {
 	
 	private void initBackground() {
 		Graphics2D g2 = (Graphics2D)background.getGraphics();
-		
+	
 		RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, 
 				RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -68,7 +74,7 @@ public class Picture extends Canvas implements Render {
 				RenderingHints.VALUE_RENDER_QUALITY);
 
 		g2.setRenderingHints(rh);
-		
+
 		g2.setColor(Color.WHITE);
 		g2.fillRect(0, 0, lsize.width, lsize.height);
 		
@@ -77,6 +83,7 @@ public class Picture extends Canvas implements Render {
 		g2.drawLine(lsize.width/2-10, lsize.height/2, lsize.width/2+10, lsize.height/2);
 		g2.drawLine(lsize.width/2, lsize.height/2-10, lsize.width/2, lsize.height/2+10);
 		
+		g2.dispose();
 	}
 	
 	public void addRotationAngle(double d) {
@@ -131,6 +138,13 @@ public class Picture extends Canvas implements Render {
 	}
 	
 	@Override
+	public void addNotify() {
+		super.addNotify();
+		createBufferStrategy(2);
+		buffer = getBufferStrategy();
+	}
+	
+	//@Override
 	/**
 	 * Use active rendering, because Java repaints component in separate thread.
 	 */
@@ -149,7 +163,7 @@ public class Picture extends Canvas implements Render {
 			canvas.drawImage(options[green], (int)(p.p.x-c), (int)(p.p.y-c), this);
 		}
 		
-		Graphics2D g2 = (Graphics2D)getGraphics();
+		Graphics2D g2 = (Graphics2D)buffer.getDrawGraphics();
 
 		// rotate image
 		g2.setTransform(transformer);
@@ -160,10 +174,15 @@ public class Picture extends Canvas implements Render {
 		diff = System.currentTimeMillis();
 		
 		g2.clearRect(0, 0, getWidth(), getHeight());
-		
+
 		g2.drawImage(background, zero.x, zero.y, this);	// draw buffered background
 		g2.drawImage(foreground, zero.x, zero.y, this);	// and foreground
-		
+
 		g2.dispose();
+		
+		if (!buffer.contentsLost()) {
+			buffer.show();
+		}
+		Toolkit.getDefaultToolkit().sync(); // prevents possible event queue problems in Linux
 	}
 }

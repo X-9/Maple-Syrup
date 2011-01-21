@@ -42,7 +42,7 @@ abstract public class SpatialTable<V> implements Iterable<V> {
 		nearby = new ArrayList[column][row];	  // ftw? java doesn't allow to create generic arrays or does it?
 	}
 	
-	@Override
+	//@Override
 	public Iterator<V> iterator() {
 		return table.iterator();
 	}
